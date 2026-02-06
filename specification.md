@@ -1,4 +1,10 @@
-# Blog Engine
+# WriteOnce (?Suggested name?) Blog Engine
+(I am just adding a description here as I think it helps me totally get my head round it)
+In this project we will build a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling 
+how posts are written, stored and displayed.
+The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written
+in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting.
+
 
 ## Infrastructure
 
@@ -132,12 +138,16 @@ There would be a few parts to this creator:
 - Publishing
 - Save without publishing
 - Save and publish
+- Delete/archive
 These are all essentially mandatory, though the level of effort we put into each can be very variable.
 
 ##### Editor + Preview
 
 Minimum Viable Product:
 - a textbox with an iframe next to it that contains the processed contents of the textbox, refreshing on a time delay with some processing in between
+
+Mid-viable product
+- Can we somewhere inbetween these two options consider an accessibility checker/enforcer or the parser by default making accessibility add-ons? Would forcing them to write a summary or opening paragraph from which metadata/blog post summmary be pulled
 
 Maximum Feasible Product:
 - a fully embedded live preview and editor in the same pane, similar to what obsidian does, in which only the line being edited is shown as plaintext while the rest is properly rendered
