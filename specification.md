@@ -1,9 +1,19 @@
 # WriteOnce (?Suggested name?) Blog Engine
+
+Summary
 (I am just adding a description here as I think it helps me totally get my head round it)
 In this project we will build a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling 
 how posts are written, stored and displayed.
 The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written
 in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting.
+
+Other sections to add:
+Team roles, audience and constraints, scalability, architecture diagram?
+
+#Timeline
+13th February- Spec document in 
+Deadline- presuming 1st or 2nd week in May 
+What milestones shall we have??
 
 
 ## Infrastructure
