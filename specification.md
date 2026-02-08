@@ -10,7 +10,7 @@ in a range of languages, but also displayed and exported in other formats in the
 Other sections to add:
 Team roles, audience and constraints, scalability, architecture diagram?
 
-#Timeline
+Timeline
 13th February- Spec document in 
 Deadline- presuming 1st or 2nd week in May 
 What milestones shall we have??
