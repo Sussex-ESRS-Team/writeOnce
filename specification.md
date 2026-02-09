@@ -2,19 +2,34 @@
 
 Summary
 (I am just adding a description here as I think it helps me totally get my head round it)
-In this project we will build a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling 
-how posts are written, stored and displayed.
-The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written
-in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting.
+In this project we will build a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling how posts are written, stored and displayed.
+The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting.
 
-Other sections to add:
-Team roles, audience and constraints, scalability, architecture diagram?
+todo:
+- add sections:
+  - Team roles
+  - audience and constraints
+  - scalability
+  - architecture diagram? lower prio but would be v nice
+- Decide on language or give clear specification for language requirements
+  - mix of languages? some systems language for the IR and typescript for the actual website
 
 Timeline
-13th February- Spec document in 
-Deadline- presuming 1st or 2nd week in May 
-What milestones shall we have??
+13th February- Spec document in
+Deadline- presuming 1st or 2nd week in May
 
+What milestones shall we have:
+- decide on systems language for IR handling (by 13th)
+- usable editor supporting pure html (syntax highlighting in a textbox) (week 4)
+- secure login area finished (week 4)
+- live preview (week 4)
+- support for markdown generating html directly (week 5)
+- intermediary representation fully specified (week 5)
+- Start Testing (week 6)
+- IR to html and vice versa supported (week 7+8)
+- Accessibility checker (week 9)
+- IR to markdown and vice versa supported (week 10)
+- IR to other formats (week 11)
 
 ## Infrastructure
 
