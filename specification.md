@@ -8,9 +8,12 @@ The innovative part of the project is that the blog posts are stored as 'interme
 
 # Team roles
 
-Project Manager: Paula Blackledge 
+Project Manager: Paula Blackledge
+
 Technical Lead: Mei Happs
+
 Frontend Developer: Max De La Nougerede
+
 Backend Developer: Tim Bartlett
 
 # Intended audience
