@@ -27,8 +27,7 @@ todo:
 - add sections:
   - scalability
   - architecture diagram? lower prio but would be v nice
-- Decide on language or give clear specification for language requirements
-  - mix of languages? some systems language for the IR and typescript for the actual website
+
 
 # Milestone
 
