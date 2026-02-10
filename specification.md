@@ -1,25 +1,35 @@
-# WriteOnce (?Suggested name?) Blog Engine
+# Project Specification
+# WriteOnce Blog Engine
 
-Summary
-(I am just adding a description here as I think it helps me totally get my head round it)
-In this project we will build a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling how posts are written, stored and displayed.
-The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting.
+# Summary
+
+The WriteOnce Blog Engine is a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling how posts are written, stored and displayed.
+The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting. In this 12 week project we will develop a prototype of the Blog Engine and if time allows add functionality around accessibility, security and improvements to the user interface.
+
+# Team roles
+
+Project Manager: Paula Blackledge 
+Technical Lead: Mei Happs
+Frontend Developer: Max De La Nougerede
+Backend Developer: Tim Bartlett
+
+# Intended audience
+
+The blog engine is an ideal solution for writers and organisations that need flexible ways to write blogs. They can write the blogs in a format that suits them whilst still producing clean and well formatted posts, that meet good standards by default. For those working one a blog within a team, the flexibility of the IR means different people can work on the blogs in their preferred format and it also future proofs the blogs as the post can be re-exported in multiple formats.
+
+# Constraints of the approach
+Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaing it's structure.
 
 todo:
 - add sections:
-  - Team roles
-  - audience and constraints
   - scalability
   - architecture diagram? lower prio but would be v nice
 - Decide on language or give clear specification for language requirements
   - mix of languages? some systems language for the IR and typescript for the actual website
 
-Timeline
-13th February- Spec document in
-Deadline- presuming 1st or 2nd week in May
+# Milestone
 
-What milestones shall we have:
-- decide on systems language for IR handling (by 13th)
+- decide on systems language for IR handling (by 13th February)
 - usable editor supporting pure html (syntax highlighting in a textbox) (week 4)
 - secure login area finished (week 4)
 - live preview (week 4)
