@@ -153,6 +153,122 @@ I hope this makes it clear why a robust type system would be necessary, these ty
 
 In terms of actually parsing these formats, I think it would be wise to use something like treesitter rather than making it from the ground up ourselves. Treesitter is well-established and consistent and it would be interesting to approach this by making a treesitter for our own domain specific language (the intermediate representation).
 
+### Language and Technology Stack
+
+After evaluating several options for implementing the intermediary representation and overall system architecture, we have decided to use TypeScript for the entire project stack. This section outlines our evaluation process and rationale.
+
+#### Language Evaluation
+
+##### Rust
+
+Advantages:
+- Exceptionally robust type system with algebraic data types (enums with associated data)
+- Native pattern matching with exhaustive checking and destructuring
+- Zero-cost abstractions and excellent performance characteristics
+- Memory safety guarantees without garbage collection
+- Strong support for functional programming paradigms
+- TreeSitter has excellent Rust bindings
+- Can compile to WebAssembly for potential browser integration
+
+Disadvantages:
+- Steep learning curve, particularly around ownership and borrowing concepts
+- Only one team member has prior Rust experience
+- Ecosystem instability: frequent breaking changes in frameworks and libraries
+- Documentation outside of core language resources is often inconsistent or outdated
+- Framework churn would introduce timeline risk in a 12-week project
+
+##### TypeScript
+
+Advantages:
+- Entire team has experience with JavaScript/TypeScript
+- Genuinely robust type system with discriminated unions and type narrowing
+- Exhaustive type checking at compile time
+- Mature, stable ecosystem with well-documented libraries
+- Seamless integration between frontend and backend (one language throughout)
+- Strong TreeSitter bindings available
+- Large community means extensive Stack Overflow/documentation resources
+- Fast iteration and development velocity
+- End-to-end type safety from database to UI
+
+Disadvantages:
+- Not a systems language - lower raw performance than Rust
+- Types exist only at compile time, requiring runtime validation for external data
+- No native pattern matching syntax
+- Less elegant syntax for complex type transformations compared to Rust
+- Type system, while sophisticated, requires more verbose type definitions for complex cases
+
+##### C++
+
+While C++ offers performance characteristics similar to Rust, it is a poor fit for our requirements:
+
+- Type safety: C++ lacks algebraic data types and exhaustive pattern matching. Implementing our IR would require error-prone manual type checking with `dynamic_cast` or visitor patterns
+- Memory safety: Manual memory management introduces entire categories of bugs (use-after-free, memory leaks, buffer overflows) that are completely avoided in both Rust and TypeScript
+- Modern tooling: C++ build systems and dependency management are notoriously complex compared to cargo (Rust) or npm (TypeScript)
+- Development velocity: The combination of manual memory management, weak type safety for sum types, and verbose syntax would significantly slow development
+
+C++ represents the worst of both worlds for our use case: the complexity of a systems language without the safety guarantees of Rust, and none of the developer ergonomics of TypeScript.
+
+#### Bridging the Gap: ts-pattern
+
+One of TypeScript's main limitations compared to Rust is the lack of native pattern matching syntax. However, the `ts-pattern` library provides sophisticated pattern matching capabilities that closely approximate Rust's experience:
+
+Features provided by ts-pattern:
+- Exhaustive pattern matching with compile-time checking
+- Destructuring in pattern expressions
+- Guard clauses with `P.when()`
+- Nested pattern matching for complex data structures
+- Type narrowing with full TypeScript integration
+- Pattern matching on values, not just types
+
+Example comparison:
+```typescript
+import { match } from 'ts-pattern';
+
+function renderNode(node: IRNode): string {
+  return match(node)
+    .with({ kind: 'header', level: 1 }, ({ content }) =>
+      `<h1>${content}</h1>`)
+    .with({ kind: 'header' }, ({ level, content }) =>
+      `<h${level}>${content}</h${level}>`)
+    .with({ kind: 'bulletList' }, ({ items }) =>
+      `<ul>${items.map(renderBullet).join('')}</ul>`)
+    .with({ kind: 'numberedList' }, ({ items }) =>
+      `<ol>${items.map(renderNumber).join('')}</ol>`)
+    .exhaustive(); // Compiler error if cases are missing
+}
+```
+
+This provides the functional, type-safe transformation logic that makes Rust pleasant to work with, while maintaining TypeScript's accessibility and ecosystem stability.
+
+ts-pattern details:
+- Actively maintained community library
+- Mature, stable API
+- Adds minimal runtime overhead
+- Will be central to our IR transformation pipeline
+
+#### Final Decision: TypeScript
+
+Given our project constraints and goals, we have chosen TypeScript for the following reasons:
+
+Team and Timeline Alignment:
+With 12 weeks and only one team member experienced in Rust, TypeScript maximizes our development velocity and allows all team members to contribute effectively from day one.
+
+Technical Sophistication:
+TypeScript's type system, enhanced with `ts-pattern`, provides the type safety and pattern matching capabilities necessary for sophisticated IR transformations. We can demonstrate technical depth through:
+- Complex discriminated union types modeling our IR
+- Exhaustive pattern matching for bidirectional transformations
+- TreeSitter integration for parsing
+- End-to-end type safety across the entire stack
+- Property-based testing for IR transformation correctness
+
+Ecosystem Maturity:
+The stable TypeScript/Node.js ecosystem reduces risk of mid-project breaking changes, ensuring we can focus on delivering features rather than fighting tooling issues.
+
+Performance Adequacy:
+For a blog engine, TypeScript's performance is more than sufficient. The IR transformations are not computationally intensive enough to warrant systems-language performance characteristics.
+
+This approach prioritizes delivering a complete, well-architected system on schedule while maintaining the technical sophistication expected of a masters-level project.
+
 ### Secure Admin Area
 
 #### Post creator
