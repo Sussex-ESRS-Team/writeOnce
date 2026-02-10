@@ -45,6 +45,16 @@ todo:
 
 ## Infrastructure
 
+### Architecture Diagram
+```mermaid
+flowchart LR
+  U[User Browser] --> W[Web App]
+  W --> IR[IR Module]
+  IR --> DB[(SQL Database)]
+  DB --> W
+  W --> U
+```
+
 ### Routing
 
 We'll need some form of routing. The specific router doesn't matter - they're all pretty much the same.
