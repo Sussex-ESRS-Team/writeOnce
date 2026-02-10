@@ -43,6 +43,34 @@ todo:
 - IR to markdown and vice versa supported (week 10)
 - IR to other formats (week 11)
 
+```mermaid
+gantt
+    title ESRS Milestones 
+    dateFormat  YYYY-MM-DD
+    axisFormat  %d %b
+    tickInterval 1week
+
+    W3-LANG :milestone, m1, 2026-02-13, 0d
+
+    W4-ED   :a1, 2026-02-16, 1w
+    W4-LOG  :a2, 2026-02-16, 1w
+    W4-PREV :a3, 2026-02-16, 1w
+
+    W5-MD2H :a4, 2026-02-23, 1w
+    W5-IR   :a5, 2026-02-23, 1w
+
+    W6-TST  :a6, 2026-03-02, 1w
+
+    W7-8-H  :a7, 2026-03-09, 2w
+
+    BREAK   :crit, b1, 2026-03-23, 3w
+
+    W9-A11Y :a8, 2026-04-13, 1w
+    W10-MD  :a9, 2026-04-20, 1w
+    W11-OTH :a10, 2026-04-27, 1w
+
+```
+
 ## Infrastructure
 
 ### Architecture Diagram
