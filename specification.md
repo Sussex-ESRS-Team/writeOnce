@@ -31,17 +31,17 @@ todo:
 
 # Milestone
 
-- decide on systems language for IR handling (by 13th February)
-- usable editor supporting pure html (syntax highlighting in a textbox) (week 4)
-- secure login area finished (week 4)
-- live preview (week 4)
-- support for markdown generating html directly (week 5)
-- intermediary representation fully specified (week 5)
-- Start Testing (week 6)
-- IR to html and vice versa supported (week 7+8)
-- Accessibility checker (week 9)
-- IR to markdown and vice versa supported (week 10)
-- IR to other formats (week 11)
+- decide on systems language for IR handling (by 13th February) - LANG 
+- usable editor supporting pure html (syntax highlighting in a textbox) (week 4) - ED
+- secure login area finished (week 4) - LOG
+- live preview (week 4) - PREV
+- support for markdown generating html directly (week 5) - MD2H
+- intermediary representation fully specified (week 5) - IR
+- Start Testing (week 6) - TST
+- IR to html and vice versa supported (week 7+8) - H
+- Accessibility checker (week 9) - ACC
+- IR to markdown and vice versa supported (week 10) - MD
+- IR to other formats (week 11) - OTH
 
 ```mermaid
 gantt
@@ -65,7 +65,7 @@ gantt
 
     BREAK   :crit, b1, 2026-03-23, 3w
 
-    W9-A11Y :a8, 2026-04-13, 1w
+    W9-ACC :a8, 2026-04-13, 1w
     W10-MD  :a9, 2026-04-20, 1w
     W11-OTH :a10, 2026-04-27, 1w
 
