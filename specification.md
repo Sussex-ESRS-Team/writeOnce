@@ -23,20 +23,19 @@ The blog engine is an ideal solution for writers and organisations that need fle
 # Constraints of the approach
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaing it's structure.
 
-todo:
-- add sections:
+To do
   - scalability
-  - architecture diagram? lower prio but would be v nice
+ 
 
 
 # Milestone
 
-- decide on systems language for IR handling (by 13th February) - LANG 
-- usable editor supporting pure html (syntax highlighting in a textbox) (week 4) - ED
-- secure login area finished (week 4) - LOG
-- live preview (week 4) - PREV
-- support for markdown generating html directly (week 5) - MD2H
-- intermediary representation fully specified (week 5) - IR
+- Decide on systems language for IR handling (by 13th February) - LANG 
+- Usable editor supporting pure html (syntax highlighting in a textbox) (week 4) - ED
+- Secure login area finished (week 4) - LOG
+- Live preview (week 4) - PREV
+- Support for markdown generating html directly (week 5) - MD2H
+- Intermediary representation fully specified (week 5) - IR
 - Start Testing (week 6) - TST
 - IR to html and vice versa supported (week 7+8) - H
 - Accessibility checker (week 9) - ACC
