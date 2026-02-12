@@ -1,12 +1,12 @@
 # Project Specification
 # WriteOnce Blog Engine
 
-# Summary
+## Summary
 
 The WriteOnce Blog Engine is a flexible and secure blog engine, similar to WordPress, but with a much more powerful way of handling how posts are written, stored and displayed.
 The innovative part of the project is that the blog posts are stored as 'intermediary representation (IR)' that allows them to be written in a range of languages, but also displayed and exported in other formats in the future, whilst still maintaining their formatting. In this 12 week project we will develop a prototype of the Blog Engine and if time allows add functionality around accessibility, security and improvements to the user interface.
 
-# Team roles
+## Team roles
 
 Project Manager: Paula Blackledge
 
@@ -16,16 +16,12 @@ Frontend Developer: Max De La Nougerede
 
 Backend Developer: Tim Bartlett
 
-# Intended audience
+## Intended audience
 
 The blog engine is an ideal solution for writers and organisations that need flexible ways to write blogs. They can write the blogs in a format that suits them whilst still producing clean and well formatted posts, that meet good standards by default. For those working one a blog within a team, the flexibility of the IR means different people can work on the blogs in their preferred format and it also future proofs the blogs as the post can be re-exported in multiple formats.
 
-# Constraints of the approach
+## Constraints of the approach
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaing it's structure.
-
-To do
-  - scalability
- 
 
 
 # Milestone
@@ -71,6 +67,20 @@ gantt
 ```
 
 ## Infrastructure
+### Core features
+##### High priority features:
+- IR implementation, priority IR to HTML
+- Storage (SQL)
+- Authentification/user accounts
+- Basic editor function
+- Markdown export
+- HTML import
+  
+##### Lower priority features:
+- Accessibility checker
+- Import/export other formats
+- Improvements to blog editor 
+- Custom parser
 
 ### Architecture Diagram
 ```mermaid
@@ -84,7 +94,7 @@ flowchart LR
 
 ### Routing
 
-We'll need some form of routing. The specific router doesn't matter - they're all pretty much the same.
+We'll need some form of routing. Exact router to be decided.
 
 The routes we would need to provide would be:
 - a home page (this would probably list blog posts in some searchable and/or ordered manner)
@@ -122,11 +132,8 @@ Once format is established, we can worry about storage. Different formats lend t
 
 ### Security
 
-We could implement an accounts system in a few ways:
-- OAuth2: kinda annoying but would definitely be secure
-- Sessions: simpler but the security aspect is more down to us to ensure
-- JWT: even simpler than sessions but even harder to ensure security
-- Hanko: prebuilt, easy to use and very secure (this would be my preferred choice unless we want to make the security infra a core part of this project)
+Security for users is a priority for this system, but due to the short timeline and the need to prioritise the core element of the project (The IR development), we propose to use Hanko as a pre-built option (https://github.com/teamhanko/hanko), as this provides with an easy to use but very secure and easy to use solution that is built on privacy first principles. Alternatives we considered were: Sessions and JWT.
+
 
 ### Intermediary Representation
 
@@ -134,7 +141,7 @@ This will be the core of the project.
 
 With an intermediary representation, we can allow for many different "views" of a post, i.e. the intermediary representation isn't readible or directly usable but can easily be converted to and from html (priority no. 1), markdown, org and other plaintext formats. While viewing the post in another format, it's important to remember that the view is not a source of truth, just another way of looking at the intermediary representation for readibility.
 
-With how I'm envisioning this be done, it will require a robust type system. What I'm thinking would be something along the lines of:
+Here is an example format:
 ```md
 # Example header
 
@@ -193,20 +200,18 @@ BulletCharacter {
 }
 ```
 
-This example is not a perfect representation, but it should hopefully get the idea across. (I'm hoping this format I've chosen for the types is clear enough to not need explanation, it is not a pre-existing type system, I just threw it together)
+This example is not a perfect representation, but it should hopefully get the idea across. 
 The types need to be exhaustive enough to cover everything in each domain while also ensuring it's possible to map every domain to the intermediary representation.
 
 As an example, bullet_character is a set of enforced characters. This is because one domain may not have more than one bullet character, and therefore wouldn't enforce a bullet character when you write in it but other domains, like markdown, do. This approach allows for you to write in one format that has multiple bullet characters, edit in another format that has multiple bullet characters and have each time you view it maintain the characters you chose in both languages while also allowing languages with only one bullet character to not have to enforce any kind of memory.
 
-I hope this makes it clear why a robust type system would be necessary, these types are quite complex, especially the bullet character type. A language like python would be near impossible to get this working in.
-
-In terms of actually parsing these formats, I think it would be wise to use something like treesitter rather than making it from the ground up ourselves. Treesitter is well-established and consistent and it would be interesting to approach this by making a treesitter for our own domain specific language (the intermediate representation).
+In terms of actually parsing these formats, we are considering using Treesitter (https://github.com/tree-sitter/tree-sitter) rather than making it from the ground up ourselves. Treesitter is well-established and consistent. This is a potential source of risk to the project as it may not meet out needs, but in favour of a faster iteration time we have decided to start with Treesitter with a view to potentially replacing it with our own custom parser if time allows. 
 
 ### Language and Technology Stack
 
 After evaluating several options for implementing the intermediary representation and overall system architecture, we have decided to use TypeScript for the entire project stack. This section outlines our evaluation process and rationale.
 
-#### Language Evaluation
+#### Language Evaluation (Mei Happs)
 
 ##### Rust
 
@@ -329,15 +334,22 @@ There would be a few parts to this creator:
 - Save without publishing
 - Save and publish
 - Delete/archive
-These are all essentially mandatory, though the level of effort we put into each can be very variable.
 
-##### Editor + Preview
+#### Editor + Preview
 
-Minimum Viable Product:
-- a textbox with an iframe next to it that contains the processed contents of the textbox, refreshing on a time delay with some processing in between
+##### Minimum Viable Product:
+- A textbox with an iframe next to it that contains the processed contents of the textbox, refreshing on a time delay with some processing in between
 
-Mid-viable product
+##### Mid-viable product:
 - Can we somewhere inbetween these two options consider an accessibility checker/enforcer or the parser by default making accessibility add-ons? Would forcing them to write a summary or opening paragraph from which metadata/blog post summmary be pulled
 
-Maximum Feasible Product:
-- a fully embedded live preview and editor in the same pane, similar to what obsidian does, in which only the line being edited is shown as plaintext while the rest is properly rendered
+##### Maximum Feasible Product:
+- A fully embedded live preview and editor in the same pane, similar to what obsidian does, in which only the line being edited is shown as plaintext while the rest is properly rendered
+
+### Testing and ownership
+Within the time constraints we intend to robustly test the product throughout its development, team ownership for testing will be:
+- Unit testing: Mei Happs
+- API tests: Mei Happs
+- Continuous Integration testing: Mei Happs
+- User testing: Paula Blackledge
+
