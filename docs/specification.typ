@@ -1,3 +1,5 @@
+#set text(font: "Fira Sans")
+
 = WriteOnce Blog Engine
 
 == Summary
@@ -22,54 +24,10 @@ The blog engine is an ideal solution for writers and organisations that need fle
 == Constraints of the approach
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required structural text features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaining its structure.
 
-== Scalability
+== Core features
 
-Although WriteOnce is a prototype system, we have designed it with scalability and long-term maintainability in mind. Scalability considerations apply primarily to read performance, write reliability, and architectural extensibility.
+=== High priority features:
 
-=== Read Scalability
-
-Public blog viewing is expected to generate significantly more traffic than administrative writes.
-
-To ensure performance as the number of posts increases:
-
-- Post listings will be paginated to avoid large result sets.
-- Frequently queried fields such as `slug` and `published_at` will be indexed in the SQL database.
-- Where appropriate, rendered HTML output from the IR may be cached to avoid repeated IR-to-HTML transformations for frequently accessed posts.
-
-This ensures that growth in content volume does not degrade user-facing performance.
-
-=== Write Scalability
-
-Administrative actions (create, edit, delete) occur less frequently but must prioritise reliability.
-
-- Write operations will be executed transactionally within the SQL database.
-- The IR will be validated before persistence to ensure structural integrity.
-- Authentication is delegated to Hanko, reducing custom security overhead and improving maintainability.
-
-=== Architectural Scalability
-
-The backend is designed to be largely stateless:
-
-- Persistent state is stored exclusively in the SQL database.
-- This separation allows multiple application instances to be deployed behind a load balancer if needed.
-- Offloading authentication to Hanko further reduces server-side state management complexity.
-
-This design allows horizontal scaling without significant architectural redesign.
-
-=== IR Extensibility
-
-The intermediate representation is implemented as a discriminated union representing an abstract syntax tree (AST).
-
-- New node types can be added without breaking existing documents.
-- The schema may be versioned to support future evolution.
-- Unsupported constructs encountered during import will be handled via controlled fallback mechanisms.
-
-This ensures long-term extensibility and structural consistency.
-
-
-=== Core features
-
-==== High priority features:
 - IR implementation, priority IR to HTML
 - Storage (SQL)
 - Authentication/user accounts
@@ -77,13 +35,14 @@ This ensures long-term extensibility and structural consistency.
 - Markdown export
 - HTML import
   
-==== Lower priority features:
+=== Lower priority features:
+
 - Accessibility checker
 - Import/export other formats
 - Improvements to blog editor 
 - Custom parser
 
-= Milestones
+== Milestones
 
 - Decide on systems language for IR handling (by 13th February) - LANG 
 - V1 of specification document for hand in (by 13th February) - SPEC
@@ -151,12 +110,101 @@ The posts will be stored in a SQL database.
 
 Security for users is a priority for this system, but due to the short timeline and the need to prioritise the core element of the project (The IR development), we propose to use Hanko as a pre-built option (https://github.com/teamhanko/hanko), as this provides with an easy to use but very secure and easy to use solution that is built on privacy first principles. Alternatives we considered were: Sessions and JWT.
 
+=== Scalability
 
-=== Intermediary Representation
+Although WriteOnce is a prototype system, we have designed it with scalability and long-term maintainability in mind. Scalability considerations apply primarily to read performance, write reliability, and architectural extensibility.
+
+==== Read Scalability
+
+Public blog viewing is expected to generate significantly more traffic than administrative writes.
+
+To ensure performance as the number of posts increases:
+
+- Post listings will be paginated to avoid large result sets.
+- Frequently queried fields such as `slug` and `published_at` will be indexed in the SQL database.
+- Where appropriate, rendered HTML output from the IR may be cached to avoid repeated IR-to-HTML transformations for frequently accessed posts.
+
+This ensures that growth in content volume does not degrade user-facing performance.
+
+==== Write Scalability
+
+Administrative actions (create, edit, delete) occur less frequently but must prioritise reliability.
+
+- Write operations will be executed transactionally within the SQL database.
+- The IR will be validated before persistence to ensure structural integrity.
+- Authentication is delegated to Hanko, reducing custom security overhead and improving maintainability.
+
+==== Architectural Scalability
+
+The backend is designed to be largely stateless:
+
+- Persistent state is stored exclusively in the SQL database.
+- This separation allows multiple application instances to be deployed behind a load balancer if needed.
+- Offloading authentication to Hanko further reduces server-side state management complexity.
+
+This design allows horizontal scaling without significant architectural redesign.
+
+==== IR Extensibility
+
+The intermediate representation is implemented as a discriminated union representing an abstract syntax tree (AST).
+
+- New node types can be added without breaking existing documents.
+- The schema may be versioned to support future evolution.
+- Unsupported constructs encountered during import will be handled via controlled fallback mechanisms.
+
+This ensures long-term extensibility and structural consistency.
+
+=== Error Handling
+
+The WriteOnce system will distinguish between expected operational failures and unexpected exceptional conditions, applying different error handling strategies to each category.
+
+==== Result Types for Expected Failures
+
+Domain logic operations that may fail as part of normal operation return Result types, forcing callers to explicitly handle both success and failure cases at compile time:
+
+- IR validation: Structural validation of intermediate representation nodes
+- Format conversion: Parsing and transformation between IR and external formats (Markdown, HTML)
+- Import operations: User-provided content that may be malformed or unsupported
+- Export operations: IR constructs that cannot be represented in the target format
+
+Example Result type definition:
+
+```ts
+type Result<T, E = Error> = 
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+function parseMarkdownToIR(markdown: string): Result<IRNode[], ParseError> {
+  // Returns Result forcing caller to handle parse failures
+}
+```
+
+This approach leverages TypeScript's discriminated unions and `ts-pattern` for exhaustive pattern matching, ensuring error cases cannot be accidentally ignored. We will likely use `ts-results` for our Result types.
+
+==== Exceptions for Exceptional Conditions
+
+Exceptions are reserved for genuinely unexpected failures that indicate system-level problems or programming errors:
+
+- Database connection failures
+- File system errors during server startup
+- Authentication service (Hanko) unavailability
+- Malformed data from trusted internal sources
+
+These failures typically cannot be meaningfully recovered from at the call site and are handled by centralized error handlers at architectural boundaries (HTTP middleware, database connection layer).
+
+==== Conversion at Boundaries
+
+HTTP route handlers convert between these approaches:
+- Result type failures from domain logic are converted to appropriate HTTP error responses (400, 422)
+- Exceptions are caught by middleware and converted to 500 responses with sanitized error messages
+
+This strategy provides compile-time safety for business logic while maintaining idiomatic exception handling at the framework level.
+
+=== Intermediate Representation
 
 This will be the core of the project.
 
-With an intermediate representation, we can allow for many different "views" of a post, i.e. the intermediate representation isn't readable or directly usable but can easily be converted to and from HTML (priority no. 1), Markdown, org and other plaintext formats. While viewing the post in another format, it's important to remember that the view is not a source of truth, just another way of looking at the intermediate representation for readibility.
+With an intermediate representation, we can allow for many different "views" of a post, i.e. the intermediate representation isn't readable or directly usable but can easily be converted to and from HTML (priority no. 1), Markdown, org and other plaintext formats. While viewing the post in another format, it's important to remember that the view is not a source of truth, just another way of looking at the intermediate representation for readability.
 
 Here is an example of how a markdown document could be losslessly represented in our format:
 

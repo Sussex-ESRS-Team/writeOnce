@@ -23,6 +23,7 @@ The blog engine is an ideal solution for writers and organisations that need fle
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required strucutural text features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaing it's structure.
 
 ### Core features
+
 ##### High priority features:
 - IR implementation, priority IR to HTML
 - Storage (SQL)
