@@ -1,0 +1,12 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+
+flowchart LR
+  U[User Browser] --> W[Web App]
+  W --> IR[IR Module]
+  IR --> DB[(SQL Database)]
+  DB --> W
+  W --> U
