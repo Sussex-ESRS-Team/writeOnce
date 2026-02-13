@@ -96,7 +96,7 @@ This ensures long-term extensibility and structural consistency.
 - Authentication via Hanko (week 5) - HANK
 - Markdown to IR supported (week 6) - MD2IR
 - HTML to IR supported (week 7+8) - H2IR
-- IR to Markdown and vice versa supported (week 10) - MD
+- IR to Markdown supported (week 9) - MD
 - Accessibility checker (week 9-11) - ACC
 - IR to other formats (week 9-11) - OTH
 - Editor enhancements (week 9-11) - ENHC
