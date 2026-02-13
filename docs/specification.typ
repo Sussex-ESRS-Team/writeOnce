@@ -22,6 +22,51 @@ The blog engine is an ideal solution for writers and organisations that need fle
 == Constraints of the approach
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required structural text features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaining its structure.
 
+== Scalability
+
+Although WriteOnce is a prototype system, we have designed it with scalability and long-term maintainability in mind. Scalability considerations apply primarily to read performance, write reliability, and architectural extensibility.
+
+=== Read Scalability
+
+Public blog viewing is expected to generate significantly more traffic than administrative writes.
+
+To ensure performance as the number of posts increases:
+
+- Post listings will be paginated to avoid large result sets.
+- Frequently queried fields such as `slug` and `published_at` will be indexed in the SQL database.
+- Where appropriate, rendered HTML output from the IR may be cached to avoid repeated IR-to-HTML transformations for frequently accessed posts.
+
+This ensures that growth in content volume does not degrade user-facing performance.
+
+=== Write Scalability
+
+Administrative actions (create, edit, delete) occur less frequently but must prioritise reliability.
+
+- Write operations will be executed transactionally within the SQL database.
+- The IR will be validated before persistence to ensure structural integrity.
+- Authentication is delegated to Hanko, reducing custom security overhead and improving maintainability.
+
+=== Architectural Scalability
+
+The backend is designed to be largely stateless:
+
+- Persistent state is stored exclusively in the SQL database.
+- This separation allows multiple application instances to be deployed behind a load balancer if needed.
+- Offloading authentication to Hanko further reduces server-side state management complexity.
+
+This design allows horizontal scaling without significant architectural redesign.
+
+=== IR Extensibility
+
+The intermediate representation is implemented as a discriminated union representing an abstract syntax tree (AST).
+
+- New node types can be added without breaking existing documents.
+- The schema may be versioned to support future evolution.
+- Unsupported constructs encountered during import will be handled via controlled fallback mechanisms.
+
+This ensures long-term extensibility and structural consistency.
+
+
 === Core features
 
 ==== High priority features:
