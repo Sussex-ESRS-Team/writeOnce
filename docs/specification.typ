@@ -86,16 +86,20 @@ This ensures long-term extensibility and structural consistency.
 = Milestones
 
 - Decide on systems language for IR handling (by 13th February) - LANG 
-- Usable editor supporting pure HTML (syntax highlighting in a textbox) (week 4) - ED
-- Secure login area finished (week 4) - LOG
-- Live preview (week 4) - PREV
-- Support for Markdown generating HTML directly (week 5) - MD2H
-- Intermediary representation fully specified (week 5) - IR
-- Start Testing (week 6) - TST
-- IR to HTML and vice versa supported (week 7+8) - H
-- Accessibility checker (week 9) - ACC
+- V1 of specification document for hand in (by 13th February) - SPEC
+- V1 schema for IR (week 4) - IRv1
+- IR to HTML renderer (week 4) - REND
+- Define SQL schema (week 4) - SQL
+- Setup CI (week 4) - CI
+- Initial SQL DB setup and integration (week 5) - DB
+- Basic editor (week 5) - ED
+- Authentication via Hanko (week 5) - HANK
+- Markdown to IR supported (week 6) - MD2IR
+- HTML to IR supported (week 7+8) - H2IR
 - IR to Markdown and vice versa supported (week 10) - MD
-- IR to other formats (week 11) - OTH
+- Accessibility checker (week 9-11) - ACC
+- IR to other formats (week 9-11) - OTH
+- Editor enhancements (week 9-11) - ENHC
 
 #image("mermaid/milestones.png")
 
