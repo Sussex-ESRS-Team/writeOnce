@@ -9,8 +9,22 @@ Next steps were:
 - Set deadline of Monday week 2 to decide on final idea for software project and agreed to continue discussions online (through GitHub discussion).
 - Agreed weekly meetings on Mondays online at 4.15pm, and to keep these going even if they were just very quick as a way of touching base
 
-Reflections from each team member on week 1:
+Week 2
+We discussed all the options that had been put forward in our GitHub discussion and considered them in turn in terms of a range of considerations including:
+-the ability to deliver a prototype in the timescale, 
+-scalability,
+-interests and skills within the team.
+
+Alternatives that were discussed were blog-engine, an accessibility checker, personal language translator for video language learning
+We agreed on the Blog Engine idea in the end as it seemed to have the best potential to be scalable and was a challenging and innovative idea
+Mei as Technical Lead and initiator of this idea agreed to flesh out an initial Specification Document that we would all work on collaboratoratively on GitHb.
+
+Reflections from each team member on weeks 1 and 2:
 -Paula
+I was a bit nervous about joining a group of people that I didn't know, and they had all worked together before, but they have all been very welcoming.
+We found we all had different skills that meant breaking down the roles was relatively easy. I am not a strong coder so I am hoping I can add some of my experience of mananging project to the team.
+I don't have experience of working in GitHub, so have alot to learn from the team, but they've all been very patient.
+I feel communication between us has been good and the idea we have come up with is innovative and a bit challenging. 
 
 -Mei
 
@@ -24,29 +38,20 @@ Unfortunately, I became unwell during this period and was not able to contribute
 I am now looking forward to contributing more actively in my role as a backend developer and building on the strong foundation the team has established.
 
 
-Week 2
-We discussed all the options that had been put forward in terms of a range of considerations including:
--the ability to deliver them in the time, 
--scalability
--interest and skills of the team
-
-Alternatives that were discussed were blog-engine, an accessibility checker, personal language translator for video language learning
-
-We agreed on the Blog Engine idea in the end as it seemed to have the best potential to be scalable and was a challenging and innovative idea
-
-Reflection on week 2 from team members:
-Paula
-Mei
-Max 
-Tim
-
 Week 3
-This meeting was focussed around the Specification document. We used a document Github to work together on the draft. 
-Different parts of the document were assigned to different people according to their roles
+This meeting was focussed around the Specification document. We used a document Github to work together on the draft and worked through the separate points that had been raised. 
+At the end we assigned different parts of the Specification that still needed writing or fleshing out to different team members. 
+The biggest question mark was over what language we would use for the Intermediate Repository (IR) as this is the essential part of the project. Mei agreed to research this further.
+We agreed to start using Issues in GitHub to assign and track what had been assigned.
 
 Reflections on week 3:
-Paula
-Mei
-Max 
-Tim
+- Paula
+Mei had done a great job at the initial Spoecification document and so this formed a great basis for our discussion this week. We all took on tasks, although I felt I couldn't help enough on the technical side.
+I think our video team calls are working well and offer a more flexible approach to us all meeting on campus.
+Throughout the week we have communicated through our GitHub discussion to get the Spec document completed, and I felt it was a really solid document in the end.
+
+- Mei
+
+- Max 
+- Tim
 
