@@ -70,7 +70,7 @@ Max's work on the SQL setup was independent. Paula would set up the issues and m
 Reflections on week 4:
 - Paula
 I haven't had so much to do this week as the rest of the team get on with their coding tasks. Really looking forward to seeing it starting to take shape and hopefullly will learn more about the process of writing code as a team, as this is something I've never done.
-Also hoping to be able to start matching where we are in the specification with the tasks that need doing and think about planning ahead.
+Also hoping to be able to start to beable to independently start to identify tasks from the specification with the issues that need rasining in Github so the team can keep moving through tasks smoothly.
 
 - Mei
 
@@ -78,4 +78,17 @@ Also hoping to be able to start matching where we are in the specification with 
 
 -Tim
 
+Week 5:
+Last week we started on writing the copde for the IR schema, HTML to IR renderer and the SQL schema. Progress has been good but as we don't currently have an Editor we aren't able to test yet.
+GitHub seems to be working well for us to work together, although we did feel the discussion function isn't so good for quick questions, as we are a small team though we thought it best to stick with it for now.
+At this week's meeting we reviewed the tasks for the coming week and realised that we had put creating the Editor before we had the code to convert Markdown to the IR (originally a week 6 task), so we decided to swap the tasks around and begin work on the editor next week as that makes more sense.
+Priorities for the week were: Getting the database set up: Markdown to IR schema and setting up the Hanko security module. 
+
 Reflections on week 5:
+- Paula
+
+- Mei
+
+- Max
+
+-Tim
