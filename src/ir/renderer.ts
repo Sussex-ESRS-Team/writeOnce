@@ -72,61 +72,26 @@ export function renderSpan(span: Span): string {
 } 
 
 export function render_list_block(listblock : ListBlock): string {
+    const isNumbered = listblock.kind === "NumberedList";
+    const itemKind = isNumbered ? "NumberedItem" : "BulletItem";
+    const tag = isNumbered ? "ol" : "ul";
     
-    switch(listblock.kind) { 
-        case "BulletedList": {
-            let list_items_to_render: string[] = []
-
-                for (let value of listblock.content) {
-                    if (value.kind === "BulletItem") {
-                        let paragraph = value.content
-                        let lines = []
-                        for (let line of paragraph) {
-                            let list_item = renderLine(line) 
-                            lines.push(list_item)
-                        }
-                        let body = lines.join("<br>")
-                        list_items_to_render.push( "<li>" + body + "</li>")
-                    } else {
-                        if (list_items_to_render.length > 0) {
-                            let last = list_items_to_render.pop()
-                            let nested = render_list_block(value)
-                            list_items_to_render.push(
-                                last!.replace("</li>", nested + "</li>")
-                            )
-                        }
-                    }   
-                }
-            let rendered_list_items = list_items_to_render.join("")
-            return "<ul>" + rendered_list_items + "</ul>"
-        }
-
-        case "NumberedList": {
-            let list_items_to_render: string[] = [] 
-            for (let value of listblock.content) {
-                if (value.kind === "NumberedItem") {
-                    let paragraph = value.content
-                    let lines = []
-                    for (let line of paragraph) {
-                        let list_item = renderLine(line) 
-                        lines.push(list_item)
-                    }
-                    let body = lines.join("<br>")
-                    list_items_to_render.push( "<li>" + body + "</li>")
-                } else {
-                    if (list_items_to_render.length > 0) {
-                        let last = list_items_to_render.pop()
-                        let nested = render_list_block(value)
-                        list_items_to_render.push(
-                            last!.replace("</li>", nested + "</li>")
-                        )
-                    }
-                }
+    const list_items_to_render: string[] = [];
+    
+    for (let value of listblock.content) {
+        if (value.kind === itemKind) {
+            const body = value.content.map(renderLine).join("<br>");
+            list_items_to_render.push(`<li>${body}</li>`);
+        } else {
+            if (list_items_to_render.length > 0) {
+                const last = list_items_to_render.pop()!;
+                const nested = render_list_block(value as ListBlock);
+                list_items_to_render.push(last.replace("</li>", nested + "</li>"));
             }
-            let rendered_list_items = list_items_to_render.join("")
-            return "<ol>" + rendered_list_items + "</ol>"
-        }
+        }   
     }
+    
+    return `<${tag}>${list_items_to_render.join("")}</${tag}>`;
 } 
 
 export function render_document(doc: IRDocument) {
