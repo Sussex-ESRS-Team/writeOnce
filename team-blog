@@ -10,7 +10,7 @@ Next steps were:
 - Agreed weekly meetings on Mondays online at 4.15pm, and to keep these going even if they were just very quick as a way of touching base
 
 Week 2
-We discussed all the options that had been put forward in our GitHub discussion and considered them in turn in terms of a range of considerations including:
+We meet online and  discussed all the options that had been put forward in our GitHub discussion, we considered them in turn in terms of a range of considerations including:
 -the ability to deliver a prototype in the timescale, 
 -scalability,
 -interests and skills within the team.
@@ -54,7 +54,6 @@ I think our video team calls are working well and offer a more flexible approach
 Throughout the week we have communicated through our GitHub discussion to get the Spec document completed, and I felt it was a really solid document in the end.
 
 - Mei
-
 After making the initial document for the specification, it was vetted and improved upon by each of the other team members. After discussing some of the tougher points and multiple rounds of improvements and additions, we finally had a completed document.
 We may have gone a little overboard with it honestly, looking at the other specification documents ours seems quite large but I feel it will be very helpful for our development.
 
@@ -65,7 +64,7 @@ Week 4
 With the Specification document being submitted this was our first week for beginning to work on the software project. We met on Google Meet this week and we felt like we prefered it.
 We discussed how we would use GitHub to manage the project, based on our experiences of using it in the past. 
 We looked at the milestones for week 4 and assigned them to team members. It was agreed that Mei and Tim's work would need to be closely aligned this week, so they would probably need to meet together separately.
-Max's work on the SQL setup was independent. Paula would set up the issues and milestones on GitHub.
+Max's work on the SQL setup was independent. Paula would set up the issues and milestones and project on GitHub.
 
 Reflections on week 4:
 - Paula
@@ -82,13 +81,32 @@ Week 5:
 Last week we started on writing the copde for the IR schema, HTML to IR renderer and the SQL schema. Progress has been good but as we don't currently have an Editor we aren't able to test yet.
 GitHub seems to be working well for us to work together, although we did feel the discussion function isn't so good for quick questions, as we are a small team though we thought it best to stick with it for now.
 At this week's meeting we reviewed the tasks for the coming week and realised that we had put creating the Editor before we had the code to convert Markdown to the IR (originally a week 6 task), so we decided to swap the tasks around and begin work on the editor next week as that makes more sense.
-Priorities for the week were: Getting the database set up: Markdown to IR schema and setting up the Hanko security module. 
+Priorities for the week were: Getting the database set up: Markdown to IR schema and setting up the Hanko security module. Mei our technical lead was ill, but we felt that these tasks could continue satifactorily without their technical input.
 
 Reflections on week 5:
 - Paula
+I feel like the team are using Github well and working really well together, the weekly team meetings are supportive and we manage to cover what we need to efficiently as the Specification document has provided a very clear structure to work from.
+Mei was ill this week, and without their technical expertise we could have paused for a week, but the three of us felt confident about what we could do without Mei's input.
+It does feel like we have good communication and honesty about our capabilities and capacity in the team.
 
 - Mei
 
 - Max
+
+-Tim
+
+Week 6:
+The meeting as always worked well as a way to refocus us for the week ahead. We hadn't made as much progress as we'd hoped last week, but Tim had completed the Markdown to IR schema and Max had begun planning the SQL database.
+We decided that getting the database sorted and then creating tests for the code already completed as well as implementing Hanko security were sufficient tasks for the coming week,
+given everyone's work loads. This will put us slightly behind on our timeline, but we felt confident we could catch up at a later date, or alternatively add some tasks as the week goes on.
+
+Reflections on week 6:
+-Paula
+I feel much more confident in Github now. It isn't my favourite for project management as the functionality is fairly limited and the chat function isn't great, 
+but for our small team, who are working on the project part time it is sufficient. Within our team we are all very supportive of each other and it is definitely a really nice postive experience so far.
+
+-Mei
+
+-Max
 
 -Tim
