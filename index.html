@@ -2,12 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tmp-vite</title>
+    <title>writeOnce</title>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="container">
+        <h1>writeOnce</h1>
+        
+        <div id="auth-form" class="auth-section active">
+          <form onsubmit="return handleAuth(event)">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" required />
+            </div>
+            <button type="submit" id="auth-btn">Login</button>
+            <button type="button" onclick="toggleSignUp()" id="toggle-btn" style="background: #95a5a6; margin-top: 10px;">Sign Up</button>
+          </form>
+        </div>
+        
+        <div id="dashboard" class="auth-section">
+          <div class="dashboard">
+            <h2>Welcome!</h2>
+            <div class="email" id="user-email"></div>
+            <button onclick="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
