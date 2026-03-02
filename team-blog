@@ -73,6 +73,8 @@ Also hoping to be able to start to beable to independently start to identify tas
 
 - Mei
 
+I met with Tim to discuss the IR schema as I'd architected it. I'd gotten all the types down and wanted to ensure Tim was on the same page with the design. Once that was done, I left tim to start on implementation while I handled tests. I didn't quite manage to make a start on those tests though as I fell ill before I could get going.
+
 - Max
 
 -Tim
@@ -91,6 +93,8 @@ It does feel like we have good communication and honesty about our capabilities 
 
 - Mei
 
+Illness has meant I wasn't able to contribute as much as I would have liked, but I did try to stay in the loop as much as possible and answer any questions that came up (provided I was well enough to do so). A couple questions did come up which I was able to answer, but a couple were a bit beyond me in that state so I deferred them to later. The team seemed to get on just fine, but our testing practices are a bit behind schedule now.
+
 - Max
 
 -Tim
@@ -107,6 +111,8 @@ I feel much more confident in Github now. It isn't my favourite for project mana
 but for our small team, who are working on the project part time it is sufficient. Within our team we are all very supportive of each other and it is definitely a really nice postive experience so far.
 
 -Mei
+
+Now that I'm mostly recovered, I'm getting back into the swing of things. Testing is back on track and I've made a few small alterations here and there. Tim's contribution to the IR schema was fantastic, bearly needed any tweaking at all.
 
 -Max
 
