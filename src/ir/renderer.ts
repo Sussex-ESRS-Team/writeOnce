@@ -51,38 +51,22 @@ export function renderLine(line : Line) {
 }
 
 //rendering span
-export function renderSpan(span: Span){
+export function renderSpan(span: Span): string {
     if (typeof span == "string") {
      return span
     }
     switch(span.kind) { 
         case "Emphasis": {
-            var rendered_span = ""
-            for(var value of span.content){
-               var span_holder = renderSpan(value)
-               rendered_span += span_holder
-            }
-            return "<em>" + rendered_span + "</em>"
+            return "<em>" + span.content.map(renderSpan).join("") + "</em>"
         } 
         case "Strong": { 
-            var rendered_span = ""
-            for(var value of span.content){
-               var span_holder = renderSpan(value)
-               rendered_span += span_holder
-            }
-            return "<strong>" + rendered_span + "</strong>"
+            return "<strong>" + span.content.map(renderSpan).join("") + "</strong>"
         }
         case "Code": {
             return "<code>" + span.code + "</code>"
-            
         }
         case "Link": {
-            var rendered_span = ""
-            for(var value of span.content){
-               var span_holder = renderSpan(value)
-               rendered_span += span_holder
-            }
-            return "<a href=" + span.href + ">" + rendered_span + "</a>"
+            return `<a href="${span.href}">` + span.content.map(renderSpan).join("") + "</a>"
         }       
     }
 } 
