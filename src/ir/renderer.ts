@@ -2,13 +2,9 @@ import type { IRDocument,
   IRNode,
   HeaderNode,
   ParagraphNode,
-  BulletBlock,
-  NumberedBlock,
   CodeBlockNode,
   Line,
   Span,
-  BulletItemNode,
-  NumberedItemNode,
   ListBlock, } from "./types";
 
 
