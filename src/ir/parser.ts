@@ -2,7 +2,6 @@ import type { BulletBlock, BulletItemNode, HeaderNode, IRNode, Line, ListBlock, 
 import { Ok, Err, Result } from 'ts-results';
 
 
-
 function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> { 
     try {
 
