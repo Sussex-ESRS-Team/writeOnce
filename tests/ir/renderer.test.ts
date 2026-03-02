@@ -100,7 +100,7 @@ describe("renderSpan", () => {
         href: "https://example.com",
         content: ["Click here"],
       })
-    ).toBe("<a href=https://example.com>Click here</a>");
+    ).toBe('<a href="https://example.com">Click here</a>');
   });
 
   it("renders nested emphasis within strong", () => {
@@ -124,7 +124,7 @@ describe("renderSpan", () => {
         " link",
       ],
     };
-    expect(renderSpan(link)).toBe("<a href=https://test.com><em>styled</em> link</a>");
+    expect(renderSpan(link)).toBe('<a href="https://test.com"><em>styled</em> link</a>');
   });
 });
 
