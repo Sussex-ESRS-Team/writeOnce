@@ -41,10 +41,7 @@ describe("render_header", () => {
     const header: HeaderNode = {
       kind: "Header",
       level: 2,
-      content: [
-        "This is ",
-        { kind: "Emphasis", content: ["important"] },
-      ],
+      content: ["This is ", { kind: "Emphasis", content: ["important"] }],
     };
     expect(render_header(header)).toBe("<h2>This is <em>important</em></h2>");
   });
@@ -77,19 +74,19 @@ describe("renderSpan", () => {
 
   it("renders emphasis span", () => {
     expect(renderSpan({ kind: "Emphasis", content: ["italic"] })).toBe(
-      "<em>italic</em>"
+      "<em>italic</em>",
     );
   });
 
   it("renders strong span", () => {
     expect(renderSpan({ kind: "Strong", content: ["bold"] })).toBe(
-      "<strong>bold</strong>"
+      "<strong>bold</strong>",
     );
   });
 
   it("renders code span", () => {
     expect(renderSpan({ kind: "Code", code: "const x = 5" })).toBe(
-      "<code>const x = 5</code>"
+      "<code>const x = 5</code>",
     );
   });
 
@@ -99,7 +96,7 @@ describe("renderSpan", () => {
         kind: "Link",
         href: "https://example.com",
         content: ["Click here"],
-      })
+      }),
     ).toBe('<a href="https://example.com">Click here</a>');
   });
 
@@ -112,19 +109,20 @@ describe("renderSpan", () => {
         " important",
       ],
     };
-    expect(renderSpan(span)).toBe("<strong>really <em>very</em> important</strong>");
+    expect(renderSpan(span)).toBe(
+      "<strong>really <em>very</em> important</strong>",
+    );
   });
 
   it("renders link with emphasized content", () => {
     const link = {
       kind: "Link" as const,
       href: "https://test.com",
-      content: [
-        { kind: "Emphasis" as const, content: ["styled"] },
-        " link",
-      ],
+      content: [{ kind: "Emphasis" as const, content: ["styled"] }, " link"],
     };
-    expect(renderSpan(link)).toBe('<a href="https://test.com"><em>styled</em> link</a>');
+    expect(renderSpan(link)).toBe(
+      '<a href="https://test.com"><em>styled</em> link</a>',
+    );
   });
 });
 
@@ -140,7 +138,9 @@ describe("renderLine", () => {
       " and ",
       { kind: "Emphasis" as const, content: ["italic"] },
     ];
-    expect(renderLine(line)).toBe("This is <strong>bold</strong> and <em>italic</em>");
+    expect(renderLine(line)).toBe(
+      "This is <strong>bold</strong> and <em>italic</em>",
+    );
   });
 
   it("renders an empty line", () => {
@@ -160,14 +160,10 @@ describe("render_paragraph", () => {
   it("renders a multi-line paragraph with line breaks", () => {
     const paragraph: ParagraphNode = {
       kind: "Paragraph",
-      content: [
-        ["First line"],
-        ["Second line"],
-        ["Third line"],
-      ],
+      content: [["First line"], ["Second line"], ["Third line"]],
     };
     expect(render_paragraph(paragraph)).toBe(
-      "<p>First line<br>Second line<br>Third line</p>"
+      "<p>First line<br>Second line<br>Third line</p>",
     );
   });
 
@@ -185,7 +181,7 @@ describe("render_paragraph", () => {
       ],
     };
     expect(render_paragraph(paragraph)).toBe(
-      "<p>This has <strong>bold</strong> and <code>code</code> text.</p>"
+      "<p>This has <strong>bold</strong> and <code>code</code> text.</p>",
     );
   });
 });
@@ -197,7 +193,7 @@ describe("render_code_block", () => {
       content: ["function test() {", "  return 42;", "}"],
     };
     expect(render_code_block(codeBlock)).toBe(
-      "<pre><code>function test() {\n  return 42;\n}</code></pre>"
+      "<pre><code>function test() {\n  return 42;\n}</code></pre>",
     );
   });
 
@@ -208,7 +204,7 @@ describe("render_code_block", () => {
       language: "javascript",
     };
     expect(render_code_block(codeBlock)).toBe(
-      '<pre><code class="javascript">const x = 5;</code></pre>'
+      '<pre><code class="javascript">const x = 5;</code></pre>',
     );
   });
 
@@ -219,7 +215,7 @@ describe("render_code_block", () => {
       language: "bash",
     };
     expect(render_code_block(codeBlock)).toBe(
-      '<pre><code class="bash">echo \'hello\'</code></pre>'
+      "<pre><code class=\"bash\">echo 'hello'</code></pre>",
     );
   });
 
@@ -243,7 +239,7 @@ describe("render_list_block", () => {
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ul><li>First item</li><li>Second item</li><li>Third item</li></ul>"
+      "<ul><li>First item</li><li>Second item</li><li>Third item</li></ul>",
     );
   });
 
@@ -256,7 +252,7 @@ describe("render_list_block", () => {
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ol><li>Step one</li><li>Step two</li></ol>"
+      "<ol><li>Step one</li><li>Step two</li></ol>",
     );
   });
 
@@ -266,14 +262,13 @@ describe("render_list_block", () => {
       content: [
         {
           kind: "BulletItem",
-          content: [
-            ["Line one"],
-            ["Line two"],
-          ],
+          content: [["Line one"], ["Line two"]],
         },
       ],
     };
-    expect(render_list_block(list)).toBe("<ul><li>Line one<br>Line two</li></ul>");
+    expect(render_list_block(list)).toBe(
+      "<ul><li>Line one<br>Line two</li></ul>",
+    );
   });
 
   it("renders list items with inline formatting", () => {
@@ -283,17 +278,13 @@ describe("render_list_block", () => {
         {
           kind: "BulletItem",
           content: [
-            [
-              "This is ",
-              { kind: "Strong", content: ["very"] },
-              " important",
-            ],
+            ["This is ", { kind: "Strong", content: ["very"] }, " important"],
           ],
         },
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ul><li>This is <strong>very</strong> important</li></ul>"
+      "<ul><li>This is <strong>very</strong> important</li></ul>",
     );
   });
 
@@ -312,7 +303,7 @@ describe("render_list_block", () => {
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ul><li>Parent item<ul><li>Nested item 1</li><li>Nested item 2</li></ul></li></ul>"
+      "<ul><li>Parent item<ul><li>Nested item 1</li><li>Nested item 2</li></ul></li></ul>",
     );
   });
 
@@ -331,7 +322,7 @@ describe("render_list_block", () => {
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ul><li>Main point<ol><li>Sub-step 1</li><li>Sub-step 2</li></ol></li></ul>"
+      "<ul><li>Main point<ol><li>Sub-step 1</li><li>Sub-step 2</li></ol></li></ul>",
     );
   });
 
@@ -346,16 +337,14 @@ describe("render_list_block", () => {
             { kind: "BulletItem", content: [["Level 2"]] },
             {
               kind: "BulletedList",
-              content: [
-                { kind: "BulletItem", content: [["Level 3"]] },
-              ],
+              content: [{ kind: "BulletItem", content: [["Level 3"]] }],
             },
           ],
         },
       ],
     };
     expect(render_list_block(list)).toBe(
-      "<ul><li>Level 1<ul><li>Level 2<ul><li>Level 3</li></ul></li></ul></li></ul>"
+      "<ul><li>Level 1<ul><li>Level 2<ul><li>Level 3</li></ul></li></ul></li></ul>",
     );
   });
 });
@@ -455,7 +444,7 @@ describe("render_document", () => {
       "<h1>Introduction</h1>" +
       "<p>This is the first paragraph.</p>" +
       "<h2>Code Example</h2>" +
-      '<pre><code class="javascript">console.log(\'Hello\')</code></pre>';
+      "<pre><code class=\"javascript\">console.log('Hello')</code></pre>";
     expect(render_document(doc)).toBe(expected);
   });
 

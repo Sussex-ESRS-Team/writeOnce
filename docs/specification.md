@@ -20,27 +20,30 @@ Backend Developer: Tim Bartlett
 The blog engine is an ideal solution for writers and organisations that need flexible ways to write blogs. They can write the blogs in a format that suits them whilst still producing clean and well formatted posts, that meet good standards by default. For those working on a blog within a team, the flexibility of the IR means different people can work on the blogs in their preferred format and it also future proofs the blogs as the post can be re-exported in multiple formats.
 
 ## Constraints of the approach
+
 Our WriteOnce Blog Engine will be based around a single structured representation, so a major constraint is that we may not be able to represent all required strucutural text features within this model. Alongside this, because of time restrictions, it is unlikely we will produce a version on WriteOnce that will provide a rich interface for blog editors. These constraints are traded off by the long-term advantages of the approach that allows for easy conversion to other formats whilst still maintaing it's structure.
 
 ### Core features
 
 ##### High priority features:
+
 - IR implementation, priority IR to HTML
 - Storage (SQL)
 - Authentification/user accounts
 - Basic editor function
 - Markdown export
 - HTML import
-  
+
 ##### Lower priority features:
+
 - Accessibility checker
 - Import/export other formats
-- Improvements to blog editor 
+- Improvements to blog editor
 - Custom parser
 
 # Milestone
 
-- Decide on systems language for IR handling (by 13th February) - LANG 
+- Decide on systems language for IR handling (by 13th February) - LANG
 - Usable editor supporting pure html (syntax highlighting in a textbox) (week 4) - ED
 - Secure login area finished (week 4) - LOG
 - Live preview (week 4) - PREV
@@ -54,7 +57,7 @@ Our WriteOnce Blog Engine will be based around a single structured representatio
 
 ```mermaid
 gantt
-    title ESRS Milestones 
+    title ESRS Milestones
     dateFormat  YYYY-MM-DD
     axisFormat  %d %b
     tickInterval 1week
@@ -83,6 +86,7 @@ gantt
 ## Infrastructure
 
 ### Architecture Diagram
+
 ```mermaid
 flowchart LR
   U[User Browser] --> W[Web App]
@@ -97,6 +101,7 @@ flowchart LR
 We'll need some form of routing. Exact router is still to be decided on.
 
 The routes we would need to provide would be:
+
 - a home page (this would probably list blog posts in some searchable and/or ordered manner)
 - a general route for blog posts
 - a route for the secure admin area
@@ -104,6 +109,7 @@ The routes we would need to provide would be:
 ### Post formatting and storage
 
 This will partially come down to how we decide to format the posts. We have many choices here, such as:
+
 - Plaintext with predefined plaintext sequences for "special" datatypes. i.e. in markdown i think you can use something like:
   ```
   ![[image_name]]
@@ -134,7 +140,6 @@ Once format is established, we can worry about storage. Different formats lend t
 
 Security for users is a priority for this system, but due to the short timeline and the need to prioritise the core element of the project (The IR development), we propose to use Hanko as a pre-built option (https://github.com/teamhanko/hanko), as this provides with an easy to use but very secure and easy to use solution that is built on privacy first principles. Alternatives we considered were: Sessions and JWT.
 
-
 ### Intermediary Representation
 
 This will be the core of the project.
@@ -142,21 +147,25 @@ This will be the core of the project.
 With an intermediary representation, we can allow for many different "views" of a post, i.e. the intermediary representation isn't readible or directly usable but can easily be converted to and from html (priority no. 1), markdown, org and other plaintext formats. While viewing the post in another format, it's important to remember that the view is not a source of truth, just another way of looking at the intermediary representation for readibility.
 
 Here is an example format:
+
 ```md
 # Example header
 
 Some example paragraph.
 
 - A
+
 * Bulleted
+
 - List
   - Maybe with
   - Indentation levels
 
 1. Or even a
 2. Numbered one
-  - Maybe even
-  - With a bulleted list under it
+
+- Maybe even
+- With a bulleted list under it
 ```
 
 ```IR
@@ -200,12 +209,12 @@ BulletCharacter {
 }
 ```
 
-This example is not a perfect representation, but it should hopefully get the idea across. 
+This example is not a perfect representation, but it should hopefully get the idea across.
 The types need to be exhaustive enough to cover everything in each domain while also ensuring it's possible to map every domain to the intermediary representation.
 
 As an example, bullet_character is a set of enforced characters. This is because one domain may not have more than one bullet character, and therefore wouldn't enforce a bullet character when you write in it but other domains, like markdown, do. This approach allows for you to write in one format that has multiple bullet characters, edit in another format that has multiple bullet characters and have each time you view it maintain the characters you chose in both languages while also allowing languages with only one bullet character to not have to enforce any kind of memory.
 
-In terms of actually parsing these formats, we are considering using Treesitter (https://github.com/tree-sitter/tree-sitter) rather than making it from the ground up ourselves. Treesitter is well-established and consistent. This is a potential source of risk to the project as it may not meet out needs, but in favour of a faster iteration time we have decided to start with Treesitter with a view to potentially replacing it with our own custom parser if time allows. 
+In terms of actually parsing these formats, we are considering using Treesitter (https://github.com/tree-sitter/tree-sitter) rather than making it from the ground up ourselves. Treesitter is well-established and consistent. This is a potential source of risk to the project as it may not meet out needs, but in favour of a faster iteration time we have decided to start with Treesitter with a view to potentially replacing it with our own custom parser if time allows.
 
 ### Language and Technology Stack
 
@@ -216,6 +225,7 @@ After evaluating several options for implementing the intermediary representatio
 ##### Rust
 
 Advantages:
+
 - Exceptionally robust type system with algebraic data types (enums with associated data)
 - Native pattern matching with exhaustive checking and destructuring
 - Zero-cost abstractions and excellent performance characteristics
@@ -225,6 +235,7 @@ Advantages:
 - Can compile to WebAssembly for potential browser integration
 
 Disadvantages:
+
 - Steep learning curve, particularly around ownership and borrowing concepts
 - Only one team member has prior Rust experience
 - Ecosystem instability: frequent breaking changes in frameworks and libraries
@@ -234,6 +245,7 @@ Disadvantages:
 ##### TypeScript
 
 Advantages:
+
 - Entire team has experience with JavaScript/TypeScript
 - Genuinely robust type system with discriminated unions and type narrowing
 - Exhaustive type checking at compile time
@@ -245,6 +257,7 @@ Advantages:
 - End-to-end type safety from database to UI
 
 Disadvantages:
+
 - Not a systems language - lower raw performance than Rust
 - Types exist only at compile time, requiring runtime validation for external data
 - No native pattern matching syntax
@@ -267,6 +280,7 @@ C++ represents the worst of both worlds for our use case: the complexity of a sy
 One of TypeScript's main limitations compared to Rust is the lack of native pattern matching syntax. However, the `ts-pattern` library provides sophisticated pattern matching capabilities that closely approximate Rust's experience:
 
 Features provided by ts-pattern:
+
 - Exhaustive pattern matching with compile-time checking
 - Destructuring in pattern expressions
 - Guard clauses with `P.when()`
@@ -275,19 +289,25 @@ Features provided by ts-pattern:
 - Pattern matching on values, not just types
 
 Example comparison:
+
 ```typescript
-import { match } from 'ts-pattern';
+import { match } from "ts-pattern";
 
 function renderNode(node: IRNode): string {
   return match(node)
-    .with({ kind: 'header', level: 1 }, ({ content }) =>
-      `<h1>${content}</h1>`)
-    .with({ kind: 'header' }, ({ level, content }) =>
-      `<h${level}>${content}</h${level}>`)
-    .with({ kind: 'bulletList' }, ({ items }) =>
-      `<ul>${items.map(renderBullet).join('')}</ul>`)
-    .with({ kind: 'numberedList' }, ({ items }) =>
-      `<ol>${items.map(renderNumber).join('')}</ol>`)
+    .with({ kind: "header", level: 1 }, ({ content }) => `<h1>${content}</h1>`)
+    .with(
+      { kind: "header" },
+      ({ level, content }) => `<h${level}>${content}</h${level}>`,
+    )
+    .with(
+      { kind: "bulletList" },
+      ({ items }) => `<ul>${items.map(renderBullet).join("")}</ul>`,
+    )
+    .with(
+      { kind: "numberedList" },
+      ({ items }) => `<ol>${items.map(renderNumber).join("")}</ol>`,
+    )
     .exhaustive(); // Compiler error if cases are missing
 }
 ```
@@ -295,6 +315,7 @@ function renderNode(node: IRNode): string {
 This provides the functional, type-safe transformation logic that makes Rust pleasant to work with, while maintaining TypeScript's accessibility and ecosystem stability.
 
 ts-pattern details:
+
 - Actively maintained community library
 - Mature, stable API
 - Adds minimal runtime overhead
@@ -309,6 +330,7 @@ With 12 weeks and only one team member experienced in Rust, TypeScript maximizes
 
 Technical Sophistication:
 TypeScript's type system, enhanced with `ts-pattern`, provides the type safety and pattern matching capabilities necessary for sophisticated IR transformations. We can demonstrate technical depth through:
+
 - Complex discriminated union types modeling our IR
 - Exhaustive pattern matching for bidirectional transformations
 - TreeSitter integration for parsing
@@ -328,6 +350,7 @@ This approach prioritizes delivering a complete, well-architected system on sche
 #### Post creator
 
 There would be a few parts to this creator:
+
 - Editor
 - (live?) Preview
 - Publishing
@@ -338,18 +361,22 @@ There would be a few parts to this creator:
 #### Editor + Preview
 
 ##### Minimum Viable Product:
+
 - A textbox with an iframe next to it that contains the processed contents of the textbox, refreshing on a time delay with some processing in between
 
 ##### Mid-viable product:
+
 - Can we somewhere inbetween these two options consider an accessibility checker/enforcer or the parser by default making accessibility add-ons? Would forcing them to write a summary or opening paragraph from which metadata/blog post summmary be pulled
 
 ##### Maximum Feasible Product:
+
 - A fully embedded live preview and editor in the same pane, similar to what obsidian does, in which only the line being edited is shown as plaintext while the rest is properly rendered
 
 ### Testing and ownership
+
 Within the time constraints we intend to robustly test the product throughout its development, team ownership for testing will be:
+
 - Unit testing: Mei Happs
 - API tests: Mei Happs
 - Continuous Integration testing: Mei Happs
 - User testing: Paula Blackledge
-
