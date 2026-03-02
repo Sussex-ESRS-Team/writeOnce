@@ -55,7 +55,7 @@ function showLogin() {
 window.toggleSignUp = function () {
   isSignUp = !isSignUp;
   updateAuthUI();
-} as any;
+};
 
 // Update UI based on login/signup mode
 function updateAuthUI() {
@@ -120,13 +120,13 @@ window.handleAuth = async function (event: Event) {
   }
 
   return false;
-} as any;
+};
 
 // Logout function
 window.logout = function () {
   localStorage.removeItem("currentUser");
   showLogin();
-} as any;
+};
 
 // Check if user is already logged in
 function checkAuth() {
