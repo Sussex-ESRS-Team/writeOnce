@@ -98,7 +98,8 @@ It does feel like we have good communication and honesty about our capabilities 
 Week 6:
 The meeting as always worked well as a way to refocus us for the week ahead. We hadn't made as much progress as we'd hoped last week, but Tim had completed the Markdown to IR schema and Max had begun planning the SQL database.
 We decided that getting the database sorted and then creating tests for the code already completed as well as implementing Hanko security were sufficient tasks for the coming week,
-given everyone's work loads. This will put us slightly behind on our timeline, but we felt confident we could catch up at a later date, or alternatively add some tasks as the week goes on.
+given everyone's work loads. Mei has more to do than everyone else this week, which was a concern, but it was felt that it was important that the person writing tests was not the same person writig the code, and as Technical Lead Mei was best placed to do this.
+We are slightly behind on our timeline, but we felt confident we could catch up at a later date, or alternatively add some additional tasks this week as the week goes on.
 
 Reflections on week 6:
 -Paula
