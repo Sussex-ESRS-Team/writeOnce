@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # db
-writeonce.db
+db/writeonce.db

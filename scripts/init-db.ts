@@ -13,8 +13,8 @@ import { DatabaseSync } from "node:sqlite";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const DB_PATH = resolve(ROOT, "writeonce.db");
-const SCHEMA_PATH = resolve(ROOT, "db/schema.sql");
+const DB_PATH = resolve(ROOT, "db", "writeonce.db");
+const SCHEMA_PATH = resolve(ROOT, "db", "schema.sql");
 
 if (existsSync(DB_PATH)) {
   console.log(`[info] Database already exists at '${DB_PATH}'. Nothing to do.`);
