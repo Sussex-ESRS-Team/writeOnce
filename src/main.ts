@@ -6,35 +6,6 @@ const toggleBtn = document.getElementById("toggle-btn") as HTMLButtonElement;
 
 let isSignUp = false;
 
-// Hash password using Web Crypto API (PBKDF2)
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const salt = encoder.encode("writeonce-salt"); // Fixed salt for simplicity
-
-  const key = await crypto.subtle.importKey("raw", data, "PBKDF2", false, [
-    "deriveBits",
-  ]);
-
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: salt,
-      iterations: 100000,
-      hash: "SHA-256",
-    },
-    key,
-    256,
-  );
-
-  // Convert to hex string
-  const derivedArray = new Uint8Array(derivedBits);
-  return Array.from(derivedArray)
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-// Function to show dashboard
 function showDashboard(email: string) {
   hankoAuth?.classList.remove("active");
   dashboard?.classList.add("active");
@@ -43,7 +14,6 @@ function showDashboard(email: string) {
   }
 }
 
-// Function to show login
 function showLogin() {
   hankoAuth?.classList.add("active");
   dashboard?.classList.remove("active");
@@ -51,13 +21,6 @@ function showLogin() {
   updateAuthUI();
 }
 
-// Toggle between login and signup
-window.toggleSignUp = function () {
-  isSignUp = !isSignUp;
-  updateAuthUI();
-};
-
-// Update UI based on login/signup mode
 function updateAuthUI() {
   if (authBtn) {
     authBtn.textContent = isSignUp ? "Sign Up" : "Login";
@@ -67,7 +30,11 @@ function updateAuthUI() {
   }
 }
 
-// Handle authentication (login or signup)
+window.toggleSignUp = function () {
+  isSignUp = !isSignUp;
+  updateAuthUI();
+};
+
 window.handleAuth = async function (event: Event) {
   event.preventDefault();
   const emailInput = document.getElementById("email") as HTMLInputElement;
@@ -81,64 +48,42 @@ window.handleAuth = async function (event: Event) {
     return false;
   }
 
-  // Get all users from localStorage
-  const usersJson = localStorage.getItem("users");
-  const users: { [key: string]: string } = usersJson
-    ? JSON.parse(usersJson)
-    : {};
+  const endpoint = isSignUp ? "/api/auth/signup" : "/api/auth/login";
 
-  if (isSignUp) {
-    // Sign up mode
-    if (users[email]) {
-      alert("Account already exists with this email");
-      return false;
-    }
-    // Hash password before storing
-    const hashedPassword = await hashPassword(password);
-    users[email] = hashedPassword;
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("currentUser", email);
-    showDashboard(email);
-    emailInput.value = "";
-    passwordInput.value = "";
-  } else {
-    // Login mode
-    if (!users[email]) {
-      alert("Invalid email or password");
-      return false;
-    }
-    // Compare password with stored hash
-    const hashedPassword = await hashPassword(password);
-    if (hashedPassword !== users[email]) {
-      alert("Invalid email or password");
-      return false;
-    }
-    localStorage.setItem("currentUser", email);
-    showDashboard(email);
-    emailInput.value = "";
-    passwordInput.value = "";
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: "Unknown error" })) as { error?: string };
+    alert(body.error ?? "Unknown error");
+    return false;
   }
 
+  emailInput.value = "";
+  passwordInput.value = "";
+  showDashboard(email);
   return false;
 };
 
-// Logout function
-window.logout = function () {
-  localStorage.removeItem("currentUser");
+window.logout = async function () {
+  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   showLogin();
 };
 
-// Check if user is already logged in
-function checkAuth() {
-  const currentUser = localStorage.getItem("currentUser");
-  if (currentUser) {
-    showDashboard(currentUser);
+async function checkAuth() {
+  const res = await fetch("/api/auth/me", { credentials: "include" });
+  if (res.ok) {
+    const body = await res.json() as { email: string };
+    showDashboard(body.email);
   } else {
     showLogin();
   }
 }
 
-// Initialize on page load
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     updateAuthUI();
