@@ -23,7 +23,7 @@ export function createApp() {
       resave: false,
       saveUninitialized: false,
       cookie: { httpOnly: true, sameSite: "lax" },
-    })
+    }),
   );
 
   app.use("/api/auth", authRouter);

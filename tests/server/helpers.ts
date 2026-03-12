@@ -32,8 +32,8 @@ export function setupTestServer() {
   afterAll(
     () =>
       new Promise<void>((resolve, reject) =>
-        server.close((err) => (err ? reject(err) : resolve()))
-      )
+        server.close((err) => (err ? reject(err) : resolve())),
+      ),
   );
 
   const get = (path: string, init?: RequestInit) =>
@@ -59,7 +59,8 @@ export function setupTestServer() {
     fetch(`${baseUrl}${path}`, { method: "DELETE", ...init });
 
   /** Extract the name=value portion of a Set-Cookie header for use as a Cookie request header. */
-  const cookieFrom = (res: Response) => res.headers.get("set-cookie")?.split(";")[0] ?? "";
+  const cookieFrom = (res: Response) =>
+    res.headers.get("set-cookie")?.split(";")[0] ?? "";
 
   return { get, post, patch, del, cookieFrom };
 }

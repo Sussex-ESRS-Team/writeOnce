@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600&display=swap");
 
 * {
   margin: 0;
@@ -7,7 +7,7 @@
 }
 
 body {
-  font-family: 'Fira Sans', sans-serif;
+  font-family: "Fira Sans", sans-serif;
   background: #eff1f5; /* Catppuccin Latte base */
   color: #4c4f69; /* Catppuccin Latte text */
 }
@@ -64,7 +64,7 @@ input[type="password"] {
   border: 1px solid #ccd0da; /* Catppuccin Latte surface0 */
   border-radius: 4px;
   font-size: 14px;
-  font-family: 'Fira Sans', sans-serif;
+  font-family: "Fira Sans", sans-serif;
   box-sizing: border-box;
   background: #dce0e8; /* Catppuccin Latte crust */
   color: #4c4f69; /* Catppuccin Latte text */
@@ -85,7 +85,7 @@ button {
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Fira Sans', sans-serif;
+  font-family: "Fira Sans", sans-serif;
   transition: background 0.2s ease;
 }
 

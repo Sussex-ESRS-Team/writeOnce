@@ -58,7 +58,9 @@ window.handleAuth = async function (event: Event) {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: "Unknown error" })) as { error?: string };
+    const body = (await res
+      .json()
+      .catch(() => ({ error: "Unknown error" }))) as { error?: string };
     alert(body.error ?? "Unknown error");
     return false;
   }
@@ -77,7 +79,7 @@ window.logout = async function () {
 async function checkAuth() {
   const res = await fetch("/api/auth/me", { credentials: "include" });
   if (res.ok) {
-    const body = await res.json() as { email: string };
+    const body = (await res.json()) as { email: string };
     showDashboard(body.email);
   } else {
     showLogin();

@@ -5,9 +5,11 @@ const { post } = setupTestServer();
 
 describe("POST /api/parse", () => {
   it("parses valid markdown and returns IR nodes", async () => {
-    const res = await post("/api/parse", { markdown: "# Hello\n\nA paragraph." });
+    const res = await post("/api/parse", {
+      markdown: "# Hello\n\nA paragraph.",
+    });
     expect(res.status).toBe(200);
-    const body = await res.json() as { nodes: unknown[] };
+    const body = (await res.json()) as { nodes: unknown[] };
     expect(Array.isArray(body.nodes)).toBe(true);
     expect(body.nodes.length).toBeGreaterThan(0);
   });
@@ -25,9 +27,11 @@ describe("POST /api/parse", () => {
 
 describe("POST /api/render/markdown", () => {
   it("renders valid markdown to HTML", async () => {
-    const res = await post("/api/render/markdown", { markdown: "# Hi\n\nWorld." });
+    const res = await post("/api/render/markdown", {
+      markdown: "# Hi\n\nWorld.",
+    });
     expect(res.status).toBe(200);
-    const body = await res.json() as { html: string };
+    const body = (await res.json()) as { html: string };
     expect(typeof body.html).toBe("string");
     expect(body.html.length).toBeGreaterThan(0);
   });
@@ -41,12 +45,14 @@ describe("POST /api/render/markdown", () => {
 describe("POST /api/render/ir", () => {
   it("renders a pre-parsed IR node array to HTML", async () => {
     // First parse some markdown to get a valid IR node array
-    const parseRes = await post("/api/parse", { markdown: "# Title\n\nBody text." });
-    const { nodes } = await parseRes.json() as { nodes: unknown[] };
+    const parseRes = await post("/api/parse", {
+      markdown: "# Title\n\nBody text.",
+    });
+    const { nodes } = (await parseRes.json()) as { nodes: unknown[] };
 
     const res = await post("/api/render/ir", { nodes });
     expect(res.status).toBe(200);
-    const body = await res.json() as { html: string };
+    const body = (await res.json()) as { html: string };
     expect(typeof body.html).toBe("string");
     expect(body.html.length).toBeGreaterThan(0);
   });

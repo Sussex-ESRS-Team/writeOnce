@@ -15,7 +15,7 @@ router.get("/", (req: Request<PostParams>, res: Response) => {
   const db = getDb();
   const revisions = db
     .prepare(
-      "SELECT id, post_id, revision_number, created_by, created_at, ir_schema_version FROM post_revisions WHERE post_id = ? ORDER BY revision_number ASC"
+      "SELECT id, post_id, revision_number, created_by, created_at, ir_schema_version FROM post_revisions WHERE post_id = ? ORDER BY revision_number ASC",
     )
     .all(req.params.postId);
   res.json(revisions);
@@ -49,13 +49,17 @@ router.post("/", (req: Request<PostParams>, res: Response) => {
     typeof ir_json !== "string" &&
     (typeof ir_json !== "object" || ir_json === null)
   ) {
-    res.status(400).json({ error: "'ir_json' field is required (string or object)." });
+    res
+      .status(400)
+      .json({ error: "'ir_json' field is required (string or object)." });
     return;
   }
 
   const db = getDb();
 
-  const post = db.prepare("SELECT id FROM posts WHERE id = ?").get(req.params.postId);
+  const post = db
+    .prepare("SELECT id FROM posts WHERE id = ?")
+    .get(req.params.postId);
   if (!post) {
     res.status(404).json({ error: "Post not found." });
     return;
@@ -63,18 +67,27 @@ router.post("/", (req: Request<PostParams>, res: Response) => {
 
   const lastRevision = db
     .prepare(
-      "SELECT revision_number FROM post_revisions WHERE post_id = ? ORDER BY revision_number DESC LIMIT 1"
+      "SELECT revision_number FROM post_revisions WHERE post_id = ? ORDER BY revision_number DESC LIMIT 1",
     )
     .get(req.params.postId) as { revision_number: number } | undefined;
 
   const revision_number = (lastRevision?.revision_number ?? 0) + 1;
   const id = randomUUID();
   const created_at = new Date().toISOString();
-  const ir_json_str = typeof ir_json === "string" ? ir_json : JSON.stringify(ir_json);
+  const ir_json_str =
+    typeof ir_json === "string" ? ir_json : JSON.stringify(ir_json);
 
   db.prepare(
-    "INSERT INTO post_revisions (id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  ).run(id, req.params.postId, revision_number, created_by, created_at, IR_SCHEMA_VERSION, ir_json_str);
+    "INSERT INTO post_revisions (id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  ).run(
+    id,
+    req.params.postId,
+    revision_number,
+    created_by,
+    created_at,
+    IR_SCHEMA_VERSION,
+    ir_json_str,
+  );
 
   res.status(201).json({ id, revision_number });
 });

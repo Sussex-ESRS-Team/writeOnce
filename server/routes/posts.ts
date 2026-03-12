@@ -16,7 +16,9 @@ router.get("/", (_req, res) => {
 /** GET /api/posts/:id */
 router.get("/:id", (req, res) => {
   const db = getDb();
-  const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+  const post = db
+    .prepare("SELECT * FROM posts WHERE id = ?")
+    .get(req.params.id);
   if (!post) {
     res.status(404).json({ error: "Post not found." });
     return;
@@ -27,7 +29,9 @@ router.get("/:id", (req, res) => {
 /** GET /api/posts/slug/:slug */
 router.get("/slug/:slug", (req, res) => {
   const db = getDb();
-  const post = db.prepare("SELECT * FROM posts WHERE slug = ?").get(req.params.slug);
+  const post = db
+    .prepare("SELECT * FROM posts WHERE slug = ?")
+    .get(req.params.slug);
   if (!post) {
     res.status(404).json({ error: "Post not found." });
     return;
@@ -43,8 +47,14 @@ router.post("/", (req, res) => {
     created_by?: unknown;
   };
 
-  if (typeof slug !== "string" || typeof title !== "string" || typeof created_by !== "string") {
-    res.status(400).json({ error: "'slug', 'title', and 'created_by' string fields are required." });
+  if (
+    typeof slug !== "string" ||
+    typeof title !== "string" ||
+    typeof created_by !== "string"
+  ) {
+    res.status(400).json({
+      error: "'slug', 'title', and 'created_by' string fields are required.",
+    });
     return;
   }
 
@@ -53,7 +63,7 @@ router.post("/", (req, res) => {
   const now = new Date().toISOString();
 
   db.prepare(
-    "INSERT INTO posts (id, slug, title, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO posts (id, slug, title, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
   ).run(id, slug, title, created_by, now, now);
 
   res.status(201).json({ id });
@@ -68,7 +78,9 @@ router.patch("/:id", (req, res) => {
     published_revision_id?: unknown;
   };
 
-  const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id);
+  const post = db
+    .prepare("SELECT * FROM posts WHERE id = ?")
+    .get(req.params.id);
   if (!post) {
     res.status(404).json({ error: "Post not found." });
     return;
@@ -78,22 +90,32 @@ router.patch("/:id", (req, res) => {
   const fields: string[] = ["updated_at = ?"];
   const values: string[] = [now];
 
-  if (typeof slug === "string") { fields.push("slug = ?"); values.push(slug); }
-  if (typeof title === "string") { fields.push("title = ?"); values.push(title); }
+  if (typeof slug === "string") {
+    fields.push("slug = ?");
+    values.push(slug);
+  }
+  if (typeof title === "string") {
+    fields.push("title = ?");
+    values.push(title);
+  }
   if (typeof published_revision_id === "string") {
     fields.push("published_revision_id = ?", "published_at = ?");
     values.push(published_revision_id, now);
   }
 
   values.push(req.params.id);
-  db.prepare(`UPDATE posts SET ${fields.join(", ")} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE posts SET ${fields.join(", ")} WHERE id = ?`).run(
+    ...values,
+  );
   res.status(204).send();
 });
 
 /** DELETE /api/posts/:id */
 router.delete("/:id", (req, res) => {
   const db = getDb();
-  const result = db.prepare("DELETE FROM posts WHERE id = ?").run(req.params.id);
+  const result = db
+    .prepare("DELETE FROM posts WHERE id = ?")
+    .run(req.params.id);
   if (result.changes === 0) {
     res.status(404).json({ error: "Post not found." });
     return;

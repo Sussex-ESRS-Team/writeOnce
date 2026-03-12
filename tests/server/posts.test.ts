@@ -9,9 +9,12 @@ const { get, post, patch, del } = setupTestServer();
 
 describe("POST /api/users", () => {
   it("creates a user and returns the id", async () => {
-    const res = await post("/api/users", { hanko_user_id: "hanko-1", email: "a@example.com" });
+    const res = await post("/api/users", {
+      hanko_user_id: "hanko-1",
+      email: "a@example.com",
+    });
     expect(res.status).toBe(201);
-    const body = await res.json() as { id: string };
+    const body = (await res.json()) as { id: string };
     expect(typeof body.id).toBe("string");
   });
 
@@ -51,8 +54,11 @@ let userId: string;
 let postId: string;
 
 beforeAll(async () => {
-  const res = await post("/api/users", { hanko_user_id: "hanko-posts", email: "posts@example.com" });
-  ({ id: userId } = await res.json() as { id: string });
+  const res = await post("/api/users", {
+    hanko_user_id: "hanko-posts",
+    email: "posts@example.com",
+  });
+  ({ id: userId } = (await res.json()) as { id: string });
 });
 
 describe("POST /api/posts", () => {
@@ -63,7 +69,7 @@ describe("POST /api/posts", () => {
       created_by: userId,
     });
     expect(res.status).toBe(201);
-    const body = await res.json() as { id: string };
+    const body = (await res.json()) as { id: string };
     postId = body.id;
     expect(typeof postId).toBe("string");
   });
@@ -86,7 +92,7 @@ describe("GET /api/posts/:id", () => {
   it("returns the post", async () => {
     const res = await get(`/api/posts/${postId}`);
     expect(res.status).toBe(200);
-    const body = await res.json() as { slug: string };
+    const body = (await res.json()) as { slug: string };
     expect(body.slug).toBe("first-post");
   });
 
@@ -102,7 +108,7 @@ describe("PATCH /api/posts/:id", () => {
     expect(res.status).toBe(204);
 
     const check = await get(`/api/posts/${postId}`);
-    const body = await check.json() as { title: string };
+    const body = (await check.json()) as { title: string };
     expect(body.title).toBe("Updated Title");
   });
 
@@ -122,10 +128,12 @@ describe("POST /api/posts/:postId/revisions", () => {
   it("creates a revision and returns id + revision_number", async () => {
     const res = await post(`/api/posts/${postId}/revisions`, {
       created_by: userId,
-      ir_json: JSON.stringify([{ kind: "Header", level: 1, content: ["Hello"] }]),
+      ir_json: JSON.stringify([
+        { kind: "Header", level: 1, content: ["Hello"] },
+      ]),
     });
     expect(res.status).toBe(201);
-    const body = await res.json() as { id: string; revision_number: number };
+    const body = (await res.json()) as { id: string; revision_number: number };
     revisionId = body.id;
     expect(body.revision_number).toBe(1);
   });
@@ -135,7 +143,7 @@ describe("POST /api/posts/:postId/revisions", () => {
       created_by: userId,
       ir_json: "{}",
     });
-    const body = await res.json() as { revision_number: number };
+    const body = (await res.json()) as { revision_number: number };
     expect(body.revision_number).toBe(2);
   });
 
@@ -157,7 +165,7 @@ describe("GET /api/posts/:postId/revisions", () => {
   it("returns the list of revisions", async () => {
     const res = await get(`/api/posts/${postId}/revisions`);
     expect(res.status).toBe(200);
-    const body = await res.json() as unknown[];
+    const body = (await res.json()) as unknown[];
     expect(Array.isArray(body)).toBe(true);
     expect(body.length).toBeGreaterThanOrEqual(1);
   });

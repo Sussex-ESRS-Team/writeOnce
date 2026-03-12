@@ -5,19 +5,31 @@ const { get, post, cookieFrom } = setupTestServer();
 
 describe("POST /api/auth/signup", () => {
   it("creates an account and returns the email", async () => {
-    const res = await post("/api/auth/signup", { email: "alice@example.com", password: "secret" });
+    const res = await post("/api/auth/signup", {
+      email: "alice@example.com",
+      password: "secret",
+    });
     expect(res.status).toBe(201);
     expect(await res.json()).toMatchObject({ email: "alice@example.com" });
   });
 
   it("sets a session cookie on success", async () => {
-    const res = await post("/api/auth/signup", { email: "cookie@example.com", password: "pw" });
+    const res = await post("/api/auth/signup", {
+      email: "cookie@example.com",
+      password: "pw",
+    });
     expect(res.headers.get("set-cookie")).toBeTruthy();
   });
 
   it("returns 409 when the email is already registered", async () => {
-    await post("/api/auth/signup", { email: "dup@example.com", password: "pw" });
-    const res = await post("/api/auth/signup", { email: "dup@example.com", password: "pw" });
+    await post("/api/auth/signup", {
+      email: "dup@example.com",
+      password: "pw",
+    });
+    const res = await post("/api/auth/signup", {
+      email: "dup@example.com",
+      password: "pw",
+    });
     expect(res.status).toBe(409);
   });
 
@@ -34,20 +46,35 @@ describe("POST /api/auth/signup", () => {
 
 describe("POST /api/auth/login", () => {
   it("returns 200 with valid credentials", async () => {
-    await post("/api/auth/signup", { email: "bob@example.com", password: "correct" });
-    const res = await post("/api/auth/login", { email: "bob@example.com", password: "correct" });
+    await post("/api/auth/signup", {
+      email: "bob@example.com",
+      password: "correct",
+    });
+    const res = await post("/api/auth/login", {
+      email: "bob@example.com",
+      password: "correct",
+    });
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ email: "bob@example.com" });
   });
 
   it("returns 401 for wrong password", async () => {
-    await post("/api/auth/signup", { email: "charlie@example.com", password: "right" });
-    const res = await post("/api/auth/login", { email: "charlie@example.com", password: "wrong" });
+    await post("/api/auth/signup", {
+      email: "charlie@example.com",
+      password: "right",
+    });
+    const res = await post("/api/auth/login", {
+      email: "charlie@example.com",
+      password: "wrong",
+    });
     expect(res.status).toBe(401);
   });
 
   it("returns 401 for unknown email", async () => {
-    const res = await post("/api/auth/login", { email: "ghost@example.com", password: "pw" });
+    const res = await post("/api/auth/login", {
+      email: "ghost@example.com",
+      password: "pw",
+    });
     expect(res.status).toBe(401);
   });
 
@@ -64,7 +91,10 @@ describe("GET /api/auth/me", () => {
   });
 
   it("returns the email when the session is valid", async () => {
-    const signupRes = await post("/api/auth/signup", { email: "dave@example.com", password: "pw" });
+    const signupRes = await post("/api/auth/signup", {
+      email: "dave@example.com",
+      password: "pw",
+    });
     const cookie = cookieFrom(signupRes);
 
     const res = await get("/api/auth/me", { headers: { Cookie: cookie } });
@@ -75,10 +105,17 @@ describe("GET /api/auth/me", () => {
 
 describe("POST /api/auth/logout", () => {
   it("returns 204 and invalidates the session", async () => {
-    const signupRes = await post("/api/auth/signup", { email: "eve@example.com", password: "pw" });
+    const signupRes = await post("/api/auth/signup", {
+      email: "eve@example.com",
+      password: "pw",
+    });
     const cookie = cookieFrom(signupRes);
 
-    const logoutRes = await post("/api/auth/logout", {}, { headers: { Cookie: cookie } });
+    const logoutRes = await post(
+      "/api/auth/logout",
+      {},
+      { headers: { Cookie: cookie } },
+    );
     expect(logoutRes.status).toBe(204);
 
     // The same cookie should no longer authenticate

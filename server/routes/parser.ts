@@ -12,7 +12,9 @@ router.post("/", (req, res) => {
   const { markdown } = req.body as { markdown?: unknown };
 
   if (typeof markdown !== "string") {
-    res.status(400).json({ error: "Request body must include a 'markdown' string field." });
+    res
+      .status(400)
+      .json({ error: "Request body must include a 'markdown' string field." });
     return;
   }
 

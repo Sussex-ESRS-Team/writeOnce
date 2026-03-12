@@ -10,16 +10,26 @@ const KEY_LEN = 32;
 const DIGEST = "sha256";
 
 function hashPassword(password: string): string {
-  return pbkdf2Sync(password, SALT, ITERATIONS, KEY_LEN, DIGEST).toString("hex");
+  return pbkdf2Sync(password, SALT, ITERATIONS, KEY_LEN, DIGEST).toString(
+    "hex",
+  );
 }
 
 const router = Router();
 
 /** POST /api/auth/signup */
 router.post("/signup", (req, res) => {
-  const { email, password } = req.body as { email?: unknown; password?: unknown };
+  const { email, password } = req.body as {
+    email?: unknown;
+    password?: unknown;
+  };
 
-  if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !email ||
+    !password
+  ) {
     res.status(400).json({ error: "email and password are required." });
     return;
   }
@@ -41,10 +51,10 @@ router.post("/signup", (req, res) => {
   db.exec("BEGIN");
   try {
     db.prepare(
-      "INSERT INTO users (id, hanko_user_id, email, created_at) VALUES (?, ?, ?, ?)"
+      "INSERT INTO users (id, hanko_user_id, email, created_at) VALUES (?, ?, ?, ?)",
     ).run(userId, email, email, now);
     db.prepare(
-      "INSERT INTO user_credentials (email, password_hash, user_id) VALUES (?, ?, ?)"
+      "INSERT INTO user_credentials (email, password_hash, user_id) VALUES (?, ?, ?)",
     ).run(email, hash, userId);
     db.exec("COMMIT");
   } catch (error) {
@@ -58,9 +68,17 @@ router.post("/signup", (req, res) => {
 
 /** POST /api/auth/login */
 router.post("/login", (req, res) => {
-  const { email, password } = req.body as { email?: unknown; password?: unknown };
+  const { email, password } = req.body as {
+    email?: unknown;
+    password?: unknown;
+  };
 
-  if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !email ||
+    !password
+  ) {
     res.status(400).json({ error: "email and password are required." });
     return;
   }

@@ -11,7 +11,9 @@ let _db: DatabaseSync | null = null;
 
 function initializeSchemaIfEmpty(db: DatabaseSync): void {
   const row = db
-    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'users'")
+    .prepare(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'users'",
+    )
     .get() as { name: string } | undefined;
 
   if (!row) {

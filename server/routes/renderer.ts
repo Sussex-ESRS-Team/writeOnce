@@ -15,7 +15,9 @@ router.post("/markdown", (req, res) => {
   const { markdown } = req.body as { markdown?: unknown };
 
   if (typeof markdown !== "string") {
-    res.status(400).json({ error: "Request body must include a 'markdown' string field." });
+    res
+      .status(400)
+      .json({ error: "Request body must include a 'markdown' string field." });
     return;
   }
 
@@ -39,7 +41,9 @@ router.post("/ir", (req, res) => {
   const { nodes } = req.body as { nodes?: unknown };
 
   if (!Array.isArray(nodes)) {
-    res.status(400).json({ error: "Request body must include a 'nodes' array field." });
+    res
+      .status(400)
+      .json({ error: "Request body must include a 'nodes' array field." });
     return;
   }
 
