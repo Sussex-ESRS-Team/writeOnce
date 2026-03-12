@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseMarkdownToIR } from "../../src/ir/parser";
+import { parseMarkdownToIR } from "../../src/ir/markdown_parser";
 import type {
   HeaderNode,
   ParagraphNode,

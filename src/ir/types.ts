@@ -122,3 +122,15 @@ export type BulletMarker = string;
  * Only languages that require/preserve marker variants need entries.
  */
 export type MarkerByLanguage = Partial<Record<LanguageId, BulletMarker>>;
+
+/** Contract that every IR renderer must satisfy. */
+export interface Renderer {
+  renderSpan(span: Span): string;
+  renderLine(line: Line): string;
+  renderHeader(node: HeaderNode): string;
+  renderParagraph(node: ParagraphNode): string;
+  renderCodeBlock(node: CodeBlockNode): string;
+  renderListBlock(listblock: ListBlock, indent?: number): string;
+  renderNode(node: IRNode): string;
+  renderDocument(doc: IRDocument): string;
+}
