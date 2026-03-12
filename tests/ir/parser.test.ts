@@ -13,10 +13,10 @@ describe("parseMarkdownToIR", () => {
       const markdown = "# Hello World";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const header = result.val[0] as HeaderNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const header = result.value[0] as HeaderNode;
         expect(header.kind).toBe("Header");
         expect(header.level).toBe(1);
         expect(header.content).toEqual(["Hello World"]);
@@ -33,12 +33,12 @@ describe("parseMarkdownToIR", () => {
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(6);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(6);
 
         for (let i = 0; i < 6; i++) {
-          const header = result.val[i] as HeaderNode;
+          const header = result.value[i] as HeaderNode;
           expect(header.kind).toBe("Header");
           expect(header.level).toBe(i + 1);
           expect(header.content).toEqual([`Level ${i + 1}`]);
@@ -50,9 +50,9 @@ describe("parseMarkdownToIR", () => {
       const markdown = "###   Lots of spaces   ";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        const header = result.val[0] as HeaderNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const header = result.value[0] as HeaderNode;
         expect(header.kind).toBe("Header");
         expect(header.level).toBe(3);
         expect(header.content).toEqual(["Lots of spaces   "]);
@@ -63,9 +63,9 @@ describe("parseMarkdownToIR", () => {
       const markdown = "##";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        const header = result.val[0] as HeaderNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const header = result.value[0] as HeaderNode;
         expect(header.kind).toBe("Header");
         expect(header.level).toBe(2);
         expect(header.content).toEqual([""]);
@@ -78,10 +78,10 @@ describe("parseMarkdownToIR", () => {
       const markdown = "This is a simple paragraph.";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const paragraph = result.val[0] as ParagraphNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const paragraph = result.value[0] as ParagraphNode;
         expect(paragraph.kind).toBe("Paragraph");
         expect(paragraph.content).toEqual([["This is a simple paragraph."]]);
       }
@@ -94,10 +94,10 @@ This is line three.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const paragraph = result.val[0] as ParagraphNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const paragraph = result.value[0] as ParagraphNode;
         expect(paragraph.kind).toBe("Paragraph");
         expect(paragraph.content).toHaveLength(3);
         expect(paragraph.content).toEqual([
@@ -115,15 +115,15 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(2);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(2);
 
-        const para1 = result.val[0] as ParagraphNode;
+        const para1 = result.value[0] as ParagraphNode;
         expect(para1.kind).toBe("Paragraph");
         expect(para1.content).toEqual([["First paragraph."]]);
 
-        const para2 = result.val[1] as ParagraphNode;
+        const para2 = result.value[1] as ParagraphNode;
         expect(para2.kind).toBe("Paragraph");
         expect(para2.content).toEqual([["Second paragraph."]]);
       }
@@ -138,12 +138,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const bulletBlock = result.val[0] as BulletBlock;
-        expect(bulletBlock.kind).toBe("BulletedList");
-        expect(bulletBlock.content).toHaveLength(3);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const bulletBlock = result.value[0] as BulletBlock;
 
         bulletBlock.content.forEach((item, index) => {
           if (item.kind === "BulletItem") {
@@ -160,10 +158,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const bulletBlock = result.val[0] as BulletBlock;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const bulletBlock = result.value[0] as BulletBlock;
         expect(bulletBlock.kind).toBe("BulletedList");
         expect(bulletBlock.content).toHaveLength(2);
 
@@ -187,10 +185,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const bulletBlock = result.val[0] as BulletBlock;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const bulletBlock = result.value[0] as BulletBlock;
         expect(bulletBlock.kind).toBe("BulletedList");
         expect(bulletBlock.content).toHaveLength(2);
 
@@ -215,10 +213,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const numberedBlock = result.val[0] as NumberedBlock;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const numberedBlock = result.value[0] as NumberedBlock;
         expect(numberedBlock.kind).toBe("NumberedList");
         expect(numberedBlock.content).toHaveLength(3);
 
@@ -239,10 +237,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const numberedBlock = result.val[0] as NumberedBlock;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const numberedBlock = result.value[0] as NumberedBlock;
         expect(numberedBlock.kind).toBe("NumberedList");
         expect(numberedBlock.content).toHaveLength(3);
 
@@ -261,10 +259,10 @@ Second paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const numberedBlock = result.val[0] as NumberedBlock;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const numberedBlock = result.value[0] as NumberedBlock;
         expect(numberedBlock.kind).toBe("NumberedList");
         expect(numberedBlock.content).toHaveLength(2);
 
@@ -293,13 +291,13 @@ Another paragraph here.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(4);
-        expect(result.val[0].kind).toBe("Header");
-        expect(result.val[1].kind).toBe("Paragraph");
-        expect(result.val[2].kind).toBe("Header");
-        expect(result.val[3].kind).toBe("Paragraph");
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(4);
+        expect(result.value[0].kind).toBe("Header");
+        expect(result.value[1].kind).toBe("Paragraph");
+        expect(result.value[2].kind).toBe("Header");
+        expect(result.value[3].kind).toBe("Paragraph");
       }
     });
 
@@ -326,12 +324,12 @@ Final paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val.length).toBeGreaterThan(0);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.length).toBeGreaterThan(0);
 
         // Check that we have different node types
-        const kinds = result.val.map((node) => node.kind);
+        const kinds = result.value.map((node) => node.kind);
         expect(kinds).toContain("Header");
         expect(kinds).toContain("Paragraph");
         expect(kinds).toContain("BulletedList");
@@ -346,12 +344,12 @@ Final paragraph.`;
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
         // Should create two separate bullet blocks
-        expect(result.val).toHaveLength(2);
+        expect(result.value).toHaveLength(2);
 
-        const list1 = result.val[0] as BulletBlock;
+        const list1 = result.value[0] as BulletBlock;
         expect(list1.kind).toBe("BulletedList");
         expect(list1.content).toHaveLength(1);
         const item1 = list1.content[0];
@@ -359,7 +357,7 @@ Final paragraph.`;
           expect(item1.content).toEqual([["First list item"]]);
         }
 
-        const list2 = result.val[1] as BulletBlock;
+        const list2 = result.value[1] as BulletBlock;
         expect(list2.kind).toBe("BulletedList");
         expect(list2.content).toHaveLength(1);
         const item2 = list2.content[0];
@@ -375,9 +373,9 @@ Final paragraph.`;
       const markdown = "";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(0);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(0);
       }
     });
 
@@ -385,9 +383,9 @@ Final paragraph.`;
       const markdown = "\n\n\n";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(0);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(0);
       }
     });
 
@@ -404,11 +402,11 @@ Paragraph
 
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(2);
-        expect(result.val[0].kind).toBe("Header");
-        expect(result.val[1].kind).toBe("Paragraph");
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0].kind).toBe("Header");
+        expect(result.value[1].kind).toBe("Paragraph");
       }
     });
 
@@ -416,10 +414,10 @@ Paragraph
       const markdown = "This # is not a header";
       const result = parseMarkdownToIR(markdown);
 
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.val).toHaveLength(1);
-        const node = result.val[0] as ParagraphNode;
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const node = result.value[0] as ParagraphNode;
         expect(node.kind).toBe("Paragraph");
       }
     });

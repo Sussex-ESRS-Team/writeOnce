@@ -10,7 +10,7 @@ import type {
   NumberedItemNode,
   ParagraphNode,
 } from "./types";
-import { Ok, Err, Result } from "ts-results";
+import { Ok, Err, Result } from "ts-results-es";
 export function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> {
   try {
     const nodes: IRNode[] = [];
@@ -20,10 +20,8 @@ export function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> {
     while (i < lines.length) {
       if (isHeader(lines[i])) {
         const result = getHeaderNode(lines[i]);
-        if (result.ok) {
-          nodes.push(result.val);
-        } else {
-          console.log(result.err);
+        if (result.isOk()) {
+          nodes.push(result.value);
         }
         i++;
       } else if (isBulletedLine(lines[i])) {
