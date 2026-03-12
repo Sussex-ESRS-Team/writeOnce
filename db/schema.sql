@@ -54,6 +54,15 @@ CREATE TABLE post_revisions (
 
 CREATE INDEX post_revisions_post_id_idx ON post_revisions(post_id);
 
+-- ─── User Credentials ─────────────────────────────────────────────────────────
+
+CREATE TABLE user_credentials (
+  email         TEXT PRIMARY KEY,
+  password_hash TEXT NOT NULL,
+  user_id       TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- ─── Deferred FK: posts.published_revision_id -> post_revisions.id ────────────
 -- SQLite doesn't support ADD CONSTRAINT after CREATE, but the FK check is
 -- enforced at runtime via the trigger below.
