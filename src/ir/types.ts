@@ -87,7 +87,6 @@ export type Line = Span[];
 /** Supported spans for richer inline formatting. */
 export type Span = string | EmphasisSpan | StrongSpan | CodeSpan | LinkSpan;
 
-
 export interface EmphasisSpan {
   kind: "Emphasis";
   content: Line;
