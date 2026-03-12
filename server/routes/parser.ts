@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { parseMarkdownToIR } from "../../src/ir/parser.ts";
+import { parseMarkdownToIR } from "../../src/ir/markdown_parser.ts";
 
 const router = Router();
 
