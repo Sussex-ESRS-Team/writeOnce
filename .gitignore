@@ -25,3 +25,5 @@ dist-ssr
 
 # db
 db/writeonce.db
+db/*.db-wal
+db/*.db-shm
