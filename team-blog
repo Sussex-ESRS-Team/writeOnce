@@ -32,6 +32,8 @@ The team is making good progress. We decided on an idea rather quickly and it's 
 With the introduction of someone with team management skills, I'm hoping this will improve our ability to plan as a team, and with my prior experience working with Tim and Max we have a good idea of each other's skillsets which is certainly helping.
 
 -Max 
+Off to a good start. Team dynamics already seem relaxed, professional and communicative. We discussed how to approach the project, decided some early deadlines for brainstorming and committing to a choice of project. 
+We then discussed the options as a group and collectively decided on an idea taking motivation and appropriateness for the assignment into consideration. Roles were discussed and decided. 
 
 -Tim
 The first two weeks have been very productive. From our first meeting, we communicated clearly that we wanted to build something tangible rather than just discuss ideas. 
@@ -58,6 +60,12 @@ After making the initial document for the specification, it was vetted and impro
 We may have gone a little overboard with it honestly, looking at the other specification documents ours seems quite large but I feel it will be very helpful for our development.
 
 - Max 
+Mei drafted a very comprehensive specification document for the project. The team reviewed the content of the draft and provided feedback. Team members discussed and were assigned some extra sections to contribute. 
+I contributed a gantt chart, a basic architecture diagram and a section on scalability and reliability, which were all then also reviewed by the team and integrated into the document. This involved some reconsideration of our initial draft milestones. 
+All in all a very smooth process, with clear communication via a Github Discussions thread. 
+By writing a spec and reviewing it we uncovered some important considerations, like refining our choice of systems language for the main IR conversion and how to parse the input and the benefits and limitations of certain tools such as treesitter, 
+which was our initial choice of parser tooling. This caused us to reconsider our options and we decided to start with a traditional parser.
+
 - Tim
 
 Week 4
@@ -76,6 +84,8 @@ Also hoping to be able to start to beable to independently start to identify tas
 I met with Tim to discuss the IR schema as I'd architected it. I'd gotten all the types down and wanted to ensure Tim was on the same page with the design. Once that was done, I left tim to start on implementation while I handled tests. I didn't quite manage to make a start on those tests though as I fell ill before I could get going.
 
 - Max
+With the specification written and submitted, work began on the project. We met on a video call and ensured we were all clear on what was happening and agreed who would be doing what work. Mei and Tim were working on the spec for the IR and working towards an early HTML to IR renderer. 
+Paula was doing issue and project management via Github. And I was generating an initial SQL schema and plan for the database setup. 
 
 -Tim
 
@@ -96,6 +106,10 @@ It does feel like we have good communication and honesty about our capabilities 
 Illness has meant I wasn't able to contribute as much as I would have liked, but I did try to stay in the loop as much as possible and answer any questions that came up (provided I was well enough to do so). A couple questions did come up which I was able to answer, but a couple were a bit beyond me in that state so I deferred them to later. The team seemed to get on just fine, but our testing practices are a bit behind schedule now.
 
 - Max
+It was an interesting meeting because Mei was absent due to illness and it had a big impact on the technical leadership on the call. 
+Fortunately we already had a fairly clear plan so we were confident to carry on and decided that Tim would press on with the IR work as best he could with the info he had. And then we would see how things went when Mei returned. 
+My work on the SQL side of things and the general project management were also continuing smoothly. I provided a SQL schema on the Monday before the meeting and suggested that we use SQLite to keep things simple and to not get bogged down in server/database setup/configuration. 
+Mei reviewed the schema, approved it and agreed to SQLite. 
 
 -Tim
 
@@ -115,6 +129,12 @@ but for our small team, who are working on the project part time it is sufficien
 Now that I'm mostly recovered, I'm getting back into the swing of things. Testing is back on track and I've made a few small alterations here and there. Tim's contribution to the IR schema was fantastic, bearly needed any tweaking at all.
 
 -Max
+Very positive in the project team this week. It was nice to see Mei back and feeling mostly better and she was able to look at Tim's work and we were all impressed that he'd done a great job getting stuck in with the IR work and the QA had flagged no issues with what he'd produced, 
+which is quite a rare feat in software! There was some discussion about the project timeline and workloads. There's been some illness amongst the team and naturally everybody is very busy. 
+There were offers made in general to assist if people need to hand off work but I think the team was feeling mostly happy with where we're at. We are making steady progress. 
+This week I added the approved SQL schema to the project and set up some project structure for the database - a db/ directory and migrations folder - and the database initialisation script. 
+While looking at integrating the database with the backend I realised there was a question of who and when to do the database integration. I split the Github issue for initial db setup and integration into two tickets: 1. initial setup 2. integration. 
+Will discuss with the team how to proceed but have already discussed with Mei that we'll need to divide this work between us. 
 
 -Tim
 
@@ -133,3 +153,6 @@ Mei:
 Tim:
 
 Max:
+More steady progress. The team is working well in an asynchronous manner. We discussed plans for the spring break and hopes of pushing towards an MVP that can be tested. The idea being to ensure we have time to test and iterate on the project before the end of term deadline looms.  
+Mei got back to me and said there was enough backend to do the database integration and I planned to do the integration work but unfortunately I didn't find time. It shouldn't be a blocker for other work yet though as far as I know. 
+I'm also going to take a look at building a basic frontend soon. 
