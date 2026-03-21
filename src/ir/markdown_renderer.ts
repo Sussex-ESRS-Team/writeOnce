@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import type { Renderer } from "./types";
 import type {
   Span,
@@ -12,160 +13,117 @@ import type {
 
 export const markdownRenderer: Renderer = {
   renderSpan: function (span: Span): string {
-    if (typeof span == "string") {
+    if (typeof span === "string") {
       return span;
     }
-    switch(span.kind) {
-      case "Emphasis": {
-        const emphasisLine = this.renderLine(span.content);
+    return match(span)
+      .with({ kind: "Emphasis" }, (emphasis) => {
+        const emphasisLine = this.renderLine(emphasis.content);
         return `*${emphasisLine}*`;
-      }
-      case "Strong": {
-        let strongLine = this.renderLine(span.content);
+      })
+      .with({ kind: "Strong" }, (strong) => {
+        const strongLine = this.renderLine(strong.content);
         return `**${strongLine}**`;
-      }
-      case "Link": {
-        let linkLine = this.renderLine(span.content);
-        return `[${linkLine}](${span.href})`;
-      }
-      case "Code": {
-        return `\`${span.code}\``;
-      }
-    }
-    
+      })
+      .with({ kind: "Link" }, (link) => {
+        const linkLine = this.renderLine(link.content);
+        return `[${linkLine}](${link.href})`;
+      })
+      .with({ kind: "Code" }, (code) => `\`${code.code}\``)
+      .exhaustive();
   },
   renderLine: function (line: Line): string {
     let newLine = "";
-        for (const spn of line) {
-          newLine += this.renderSpan(spn);
-        }
+    for (const spn of line) {
+      newLine += this.renderSpan(spn);
+    }
     return newLine;
   },
   renderHeader: function (node: HeaderNode): string {
     const hash: string = "#";
-    const headerString = hash.repeat(node.level) + " " + this.renderLine(node.content);
+    const headerString =
+      hash.repeat(node.level) + " " + this.renderLine(node.content);
     return headerString;
   },
   renderParagraph: function (node: ParagraphNode): string {
-    const tempLines: string[] = []
-    for (var line of node.content) {
-       tempLines.push(this.renderLine(line));
+    const tempLines: string[] = [];
+    for (const line of node.content) {
+      tempLines.push(this.renderLine(line));
     }
-    
-    const paraString = tempLines.join("\n")
-    return paraString
+
+    const paraString = tempLines.join("\n");
+    return paraString;
   },
   renderCodeBlock: function (node: CodeBlockNode): string {
     let tempLines: string[] = [];
-    let joinedString = "";
-    let codeBlockString = "";
-    
+
     if (node.language) {
-      tempLines.push("```" + node.language)
-    }else {
+      tempLines.push("```" + node.language);
+    } else {
       tempLines.push("```");
     }
-    
+
     if (node.content.length === 0) {
       tempLines.push("");
     }
-    for (const str of node.content){
-        tempLines.push(str)
+    for (const str of node.content) {
+      tempLines.push(str);
     }
     tempLines.push("```");
-    joinedString = tempLines.join("\n");
-    codeBlockString = `${joinedString}`;
-    return codeBlockString
-  
+    return tempLines.join("\n");
   },
   renderListBlock: function (listblock: ListBlock, indent?: number): string {
-    const listItems: string[] = [];
-    const indents = " ";
-    switch(listblock.kind) {
+    const indentLevel = indent ?? 0;
+    const indentStr = "    ".repeat(indentLevel);
+    const items: string[] = [];
+    let itemNumber = 1;
 
-      case "NumberedList": {
-        var value = listblock.content
-        let i = 1;
-        for (var point of value) {
-          let item_to_push = "";
-          if (point.kind === "NumberedItem") {
-            var pNode: ParagraphNode = {
-              kind: "Paragraph",
-              content: point.content
-            } 
-            if(indent) {
-              item_to_push = indents.repeat(indent) + `${i}.` + " " + this.renderParagraph(pNode);
-            }else{
-              item_to_push = `${i}.` + " " + this.renderParagraph(pNode);
-            }
-            
-            listItems.push(item_to_push);
-
-          } else {
-            if(indent) {
-              item_to_push = this.renderListBlock(point, (indent ?? 0) + 4);
-            }else{
-              item_to_push =  this.renderListBlock(point, (indent ?? 0) + 4);
-            }
-
-            listItems.push(item_to_push);
-          }
-          i += 1;
-        }
-        return listItems.join("\n")
+    for (const item of listblock.content) {
+      // Handle nested lists
+      if (item.kind === "NumberedList" || item.kind === "BulletedList") {
+        items.push(this.renderListBlock(item, indentLevel + 1));
+        continue;
       }
-      case "BulletedList": {
-        var val = listblock.content
-        for (var pnt of val) {
-          let item_to_push = "";
-          if (pnt.kind === "BulletItem") {
-            const marker = pnt.markerByLanguage?.markdown ?? "-";
-            var pNode: ParagraphNode = {
-              kind: "Paragraph",
-              content: pnt.content
-            }
 
-            if(indent) {
-              item_to_push = indents.repeat(indent) + marker + " " + this.renderParagraph(pNode);
-            }else{
-              item_to_push = marker + " " + this.renderParagraph(pNode);
-            }
-            
-            listItems.push(item_to_push);
-
-          } else {
-            if(indent) {
-              item_to_push =  this.renderListBlock(pnt, (indent ?? 0) + 4);
-            }else{
-              item_to_push = this.renderListBlock(pnt, (indent ?? 0) + 4);
-            }
-
-            listItems.push(item_to_push);
-          }
-        }
-        return listItems.join("\n")
+      // Process list items with type-specific prefix
+      let prefix: string;
+      if (item.kind === "NumberedItem") {
+        prefix = `${indentStr}${itemNumber}. `;
+        itemNumber++;
+      } else {
+        // BulletItem
+        const marker = item.markerByLanguage?.markdown ?? "-";
+        prefix = `${indentStr}${marker} `;
       }
+
+      const paragraph: ParagraphNode = {
+        kind: "Paragraph",
+        content: item.content,
+      };
+      const renderedContent = this.renderParagraph(paragraph);
+      items.push(`${prefix}${renderedContent}`);
     }
+
+    return items.join("\n");
   },
   renderNode: function (node: IRNode): string {
-    switch (node.kind) {
-      case "Header":
-        return this.renderHeader(node);
-      case "Paragraph":
-        return this.renderParagraph(node);
-      case "BulletedList":
-        return this.renderListBlock(node);
-      case "NumberedList":
-        return this.renderListBlock(node);
-      case "CodeBlock":
-        return this.renderCodeBlock(node);
-    }
+    return match(node)
+      .with({ kind: "Header" }, (header) => this.renderHeader(header))
+      .with({ kind: "Paragraph" }, (paragraph) =>
+        this.renderParagraph(paragraph),
+      )
+      .with({ kind: "BulletedList" }, (bulletedList) =>
+        this.renderListBlock(bulletedList),
+      )
+      .with({ kind: "NumberedList" }, (numberedList) =>
+        this.renderListBlock(numberedList),
+      )
+      .with({ kind: "CodeBlock" }, (codeBlock) =>
+        this.renderCodeBlock(codeBlock),
+      )
+      .exhaustive();
   },
   renderDocument: function (doc: IRDocument): string {
-    let markdown_doc = "";
-    for (let node of doc.nodes) {
-      markdown_doc += this.renderNode(node);
-    }
-    return doc.nodes.map(node => this.renderNode(node)).join("\n\n");
+    return doc.nodes.map((node) => this.renderNode(node)).join("\n\n");
   },
 };

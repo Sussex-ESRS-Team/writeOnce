@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import type {
   IRDocument,
   IRNode,
@@ -12,33 +13,35 @@ import type {
 
 export const htmlRenderer: Renderer = {
   renderSpan(span: Span): string {
-    if (typeof span == "string") {
+    if (typeof span === "string") {
       return span;
     }
-    switch (span.kind) {
-      case "Emphasis": {
+    return match(span)
+      .with({ kind: "Emphasis" }, (emphasis) => {
         return (
-          "<em>" + span.content.map(htmlRenderer.renderSpan).join("") + "</em>"
+          "<em>" +
+          emphasis.content.map(htmlRenderer.renderSpan).join("") +
+          "</em>"
         );
-      }
-      case "Strong": {
+      })
+      .with({ kind: "Strong" }, (strong) => {
         return (
           "<strong>" +
-          span.content.map(htmlRenderer.renderSpan).join("") +
+          strong.content.map(htmlRenderer.renderSpan).join("") +
           "</strong>"
         );
-      }
-      case "Code": {
-        return "<code>" + span.code + "</code>";
-      }
-      case "Link": {
+      })
+      .with({ kind: "Code" }, (code) => {
+        return "<code>" + code.code + "</code>";
+      })
+      .with({ kind: "Link" }, (link) => {
         return (
-          `<a href="${span.href}">` +
-          span.content.map(htmlRenderer.renderSpan).join("") +
+          `<a href="${link.href}">` +
+          link.content.map(htmlRenderer.renderSpan).join("") +
           "</a>"
         );
-      }
-    }
+      })
+      .exhaustive();
   },
 
   renderLine(line: Line): string {
@@ -102,18 +105,21 @@ export const htmlRenderer: Renderer = {
   },
 
   renderNode(node: IRNode): string {
-    switch (node.kind) {
-      case "Header":
-        return htmlRenderer.renderHeader(node);
-      case "Paragraph":
-        return htmlRenderer.renderParagraph(node);
-      case "BulletedList":
-        return htmlRenderer.renderListBlock(node);
-      case "NumberedList":
-        return htmlRenderer.renderListBlock(node);
-      case "CodeBlock":
-        return htmlRenderer.renderCodeBlock(node);
-    }
+    return match(node)
+      .with({ kind: "Header" }, (header) => htmlRenderer.renderHeader(header))
+      .with({ kind: "Paragraph" }, (paragraph) =>
+        htmlRenderer.renderParagraph(paragraph),
+      )
+      .with({ kind: "BulletedList" }, (bulletedList) =>
+        htmlRenderer.renderListBlock(bulletedList),
+      )
+      .with({ kind: "NumberedList" }, (numberedList) =>
+        htmlRenderer.renderListBlock(numberedList),
+      )
+      .with({ kind: "CodeBlock" }, (codeBlock) =>
+        htmlRenderer.renderCodeBlock(codeBlock),
+      )
+      .exhaustive();
   },
 
   renderDocument(doc: IRDocument): string {
