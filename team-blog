@@ -157,8 +157,19 @@ More steady progress. The team is working well in an asynchronous manner. We dis
 Mei got back to me and said there was enough backend to do the database integration and I planned to do the integration work but unfortunately I didn't find time. It shouldn't be a blocker for other work yet though as far as I know. 
 I'm also going to take a look at building a basic frontend soon. 
 
-Week 8:
-Due to other commitments the team didn't meet this week, but as we had set ourselves a two week workload last week, it didn't matter too much.
-Our meetings only usually last 30-45 minutes, but I think we all agree they help keep us on track and the check in helps, so we can adjust milesstones, which we have had to do slightly, due to illness and other commitments.
-We will meet next week even though it is Spring break, just to make sure we can make sure team members have some tasks to be getting on with.
+Week 8 (and Spring break):
+We didn't meet in week 8, but met during the first week of the spring break. Github issues and communication between team members outside of meetings has meant things have progressed well between meetings.
+The backend is now mostly coded, Mei will check and re-run tests. We discussed the front end and decided the priority was to get the Editor functions working, so we could test the code. Max will work on this during spring break.
+Tim talked about how much he had enjoyed working on the code and what he'd learnt. We agreed to try and complete user testing before the end of the spring break and meet the first Monday back, so we could decide on priorities to move beyond the MVP in the last few weeks of the project.
+
+Reflections on week 8:
+Paula:
+I wrote the user tests this week and am keen to start looking at what we've developed. The team meetings have been really nice and not too over complex as the breakdown of the roles has meant everyone is really clear on what they need to do.
+
+
+Mei
+
+Tim
+
+Max
 
