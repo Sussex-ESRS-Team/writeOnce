@@ -1,5 +1,5 @@
 // src/components/App.tsx
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Auth from './Auth'
 import Editor from './Editor'
 import { auth, MeResponse } from '../api'
