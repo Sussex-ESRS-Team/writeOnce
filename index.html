@@ -1,41 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>writeOnce</title>
-    <link rel="stylesheet" href="/src/style.css" />
+    <title>WriteOnce</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div id="app">
-      <div class="container">
-        <h1>writeOnce</h1>
-        
-        <div id="auth-form" class="auth-section active">
-          <form onsubmit="return handleAuth(event)">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" required />
-            </div>
-            <div class="form-group">
-              <label for="password">Password</label>
-              <input type="password" id="password" required />
-            </div>
-            <button type="submit" id="auth-btn">Login</button>
-            <button type="button" onclick="toggleSignUp()" id="toggle-btn" style="background: #95a5a6; margin-top: 10px;">Sign Up</button>
-          </form>
-        </div>
-        
-        <div id="dashboard" class="auth-section">
-          <div class="dashboard">
-            <h2>Welcome!</h2>
-            <div class="email" id="user-email"></div>
-            <button onclick="logout()">Logout</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
