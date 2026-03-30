@@ -11,6 +11,7 @@
 //      and renders it back to HTML for display + reloads the Markdown into the editor
 
 import React, { useState, useCallback } from 'react'
+import DOMPurify from 'dompurify'
 import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -263,7 +264,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               {previewHtml ? (
                 <div
                   style={styles.previewContent}
-                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewHtml) }}
                 />
               ) : (
                 <div style={styles.previewEmpty}>
@@ -315,8 +316,15 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
                           className="btn-danger"
                           onClick={async () => {
                             if (!confirm(`Delete "${post.title}"?`)) return
-                            await posts.delete(post.id)
-                            setPostList(l => l.filter(p => p.id !== post.id))
+                            try {
+                              await posts.delete(post.id)
+                              setPostList(l => l.filter(p => p.id !== post.id))
+                            } catch (err: unknown) {
+                              setStatus({
+                                kind: 'err',
+                                message: err instanceof Error ? err.message : 'Delete failed',
+                              })
+                            }
                           }}
                         >
                           Delete
