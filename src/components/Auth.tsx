@@ -51,7 +51,7 @@ export default function Auth({ onLogin }: Props) {
             autoFocus
           />
 
-          <label style={styles.label} style2={{ marginTop: '0.9rem' }}>Password</label>
+          <label style={styles.label}>Password</label>
           <input
             type="password"
             value={password}
