@@ -1,171 +1,211 @@
 import { Ok, Err, Result } from "ts-results-es";
-const { JSDOM } = require("jsdom");
 import { match } from "ts-pattern";
-import type { BulletItemNode, CodeBlockNode, HeaderNode, IRNode, Line, ListBlock, NumberedItemNode, ParagraphNode, Span } from "./types";
+import type { CodeBlockNode, HeaderNode, IRNode, Line, ParagraphNode } from "./types";
+
 
 export function parseHtmlToIR(_html: string): Result<IRNode[], Error> {
+  //tokeniser - can be done as a function
+  type Token = 
+  | {type: "open", tag: string, href?: string, className?: string}
+  | {type: "text", content: string}
+  | {type: "close", tag: string}
+
+  const tokens: Token[] = [];
+
+  let i = 0;
+
+  while (i < _html.length) {
+    const char = _html[i]; //grab a character 
+
+    if (char === "<") { //check if its a tag
+
+      const end = _html.indexOf(">", i); //grab the position of the closing tag
+      if (end === -1) {
+        return Err(new Error("Could not parse html")); //fails if index is negative
+      }
+      const inside = _html.slice(i+1, end);
+      const tag = inside.split(" ")[0]; 
+
+      //check link tag
+      let href = "";
+      if (tag === "a") {
+        const match = inside.match(/href="([^"]*)"/);
+        if (match) {
+          href = match[1]
+        }
+      }
+      //extract class attri
+      let className = "";
+
+      if (tag === "code") {
+        const match = inside.match(/class="([^"]*)"/);
+        if(match) {
+          className = match[1]
+        }
+      }
+
+      if(inside.startsWith("/")) {
+        tokens.push({ type: "close", tag: inside.slice(1).trim() });
+      }else {    
+        tokens.push({ type: "open", tag, href, className});
+      }
+      i = end + 1;
+
+    } else {
+
+      const nextTag = _html.indexOf("<", i);
+      if(nextTag === -1) {
+        const text = _html.slice(i);
+        tokens.push({type: "text", content: text })
+        break;
+      }
+      
+      const text = _html.slice(i, nextTag);
+      tokens.push({ type: "text", content: text });
+      i = nextTag;
+    }
+  }
+
   const parsedNodes: IRNode[] = [];
 
-  const dom = new JSDOM(_html);
-  const doc = dom.window.document;
-  
-  if (doc.querySelector("parsererror")) {
-  return Err(new Error("Could not parse html"));
+  const stack: string[] = [];
+  type BuildFrame = {
+    tag: string, 
+    children: any[], 
+    href?: string,
+    className?: string, 
+    parentTag?: string, 
+    nestedLists?: ListBlock[]};  
+  const buildStack: BuildFrame[] = [];
+
+  //if its a open you push it on to the stack and if its a close you have to check that it is a tag
+  for (const token of tokens) {
+    if (token.type === "open") {
+      stack.push(token.tag);
+
+      const parent = buildStack[buildStack.length -1];
+      buildStack.push({tag: token.tag, 
+        children: [], 
+        href: token.href, 
+        className: token.className, 
+        parentTag: parent?.tag, 
+        nestedLists: []})
+
+    } else if (token.type === "text") {
+
+      const current = buildStack[buildStack.length - 1];
+
+      if (current && token.content !== "") {
+        current.children.push(token.content);
+      }
+    } else if(token.type === "close") {
+      const top = stack.pop();
+
+      if(top !== token.tag) {
+        return Err(new Error("Could not parse html"))
+      }
+
+      const frame = buildStack.pop();
+      if(!frame) {
+        return Err(new Error("Could not parse html"))
+      }
+      let built;
+      try {
+        built = buildNode(
+          frame.tag, 
+          frame.children, 
+          frame.href, 
+          frame.parentTag,
+          frame.className);
+      } catch {
+        return Err(new Error("Could not parse html"))
+      }
+      if (buildStack.length === 0) {
+        if(built) {
+          parsedNodes.push(built);
+        }
+      } else {
+        const parent = buildStack[buildStack.length - 1];
+        if(!parent) {
+          return Err(new Error("Could not parse html"));
+        }
+        if (built) {
+          if ((built.kind === "BulletedList" || built.kind === "NumberedList") && parent.tag === "li") {
+             parent.nestedLists?.push(built);
+          
+          } else {
+            parent.children.push(built);
+
+            if (frame.tag === "li" && frame.nestedLists && frame.nestedLists.length > 0) {
+              for (const list of frame.nestedLists) {
+                parent.children.push(list);
+              }
+            }
+          }
+        } else {
+          parent.children.push(...frame.children); 
+        }
+      } 
+    }
   }
-  
-  for (const element of Array.from(doc.body.children) as Element[]) {
-    const tag = element.tagName.toLowerCase();
-
-    const node = match(tag)
-      .with("h1", "h2", "h3", "h4", "h5", "h6", () => Ok<IRNode | null>(parseHeader(element)))
-      .with("p", () => Ok<IRNode | null>(parseParagraph(element)))
-      .with("ol", "ul", () => Ok<IRNode | null>(parseLists(element)))
-      .with("pre", () => parseCodeBlock(element).map((codeBlock) => codeBlock as IRNode | null))
-      .otherwise(() => Ok<IRNode | null>(null));
-
-    if (node.isErr()) {
-      return Err(node.error);
-    }
-
-    if (node.value) {
-      parsedNodes.push(node.value);
-    }
-    
+  if (stack.length !== 0) {
+    return Err(new Error("Could not parse html"))
   }
   return Ok(parsedNodes);
 }
 
-export function parseHeader(el: Element): HeaderNode{
-  const tagName = el.tagName.toLowerCase();
-  const level = Number(tagName[1]);
-  const text = el.textContent ?? "";
 
-  return {
-    kind: "Header",
-    level,
-    content: [text]
-  }
-}
-
-export function parseParagraph(el: Element): ParagraphNode {
-  return {
-    kind: "Paragraph",
-    content: [parseLine(el)]
-  };
-}
-
-export function parseLine(el: Element): Line {
-  const line: Span[] = [];
-  for (const child of Array.from(el.childNodes)) {
-    const parsed = parseSpan(child);
-
-    if (parsed !== undefined) {
-      line.push(parsed);
-    }
-  }
-  return line
-}
-
-export function parseSpan(node: Node): Span | undefined {
-  if (node.nodeType === 3) {
-    const text = node.textContent ?? "";
-    if (text.trim() !== "") {
-      return text;
-    }
-  } else if (node.nodeType === 1) {
-    const el = node as Element;
-    const tag = el.tagName.toLowerCase();
-    return match(tag)
-      .returnType<Span | undefined>()
-      .with("em", () => ({
-          kind: "Emphasis",
-          content: parseLine(el)
-        }))
-      .with("strong", () => ({
-          kind: "Strong",
-          content: parseLine(el)
-        }))
-      .with("a", () => ({
-          kind: "Link",
-          href: el.getAttribute("href") ?? "",
-          content: parseLine(el)
-        }))
-      .with("code", () => ({
-        kind: "Code",
-        code: el.textContent ?? ""
-      }))
-      .otherwise(() => undefined);
-  }
-
-  return undefined
-}
-
-export function parseLists(el: Element): ListBlock {
-  const tag = el.tagName.toLowerCase() as "ul" | "ol";
-
+export function buildNode(tag: string, children: any[], href?: string, parentTag?: string, className?: string): IRNode | null {
   return match(tag)
-    .with("ul", () => ({
-      kind: "BulletedList" as const,
-      content: parseListContent(el, "BulletItem")
-    }))
-    .with("ol", () => ({
-      kind: "NumberedList" as const,
-      content: parseListContent(el, "NumberedItem")
-    }))
-    .exhaustive();
-}
+  .with("h1", "h2", "h3", "h4", "h5", "h6", () => {
+    const level = Number(tag[1]);
 
-function parseListContent(list: Element, itemKind: "BulletItem"): Array<BulletItemNode | ListBlock>;
-function parseListContent(list: Element, itemKind: "NumberedItem"): Array<NumberedItemNode | ListBlock>;
-function parseListContent(
-  list: Element,
-  itemKind: "BulletItem" | "NumberedItem"
-): Array<BulletItemNode | NumberedItemNode | ListBlock> {
-  return Array.from(list.children).flatMap((child) => {
-    if (child.tagName.toLowerCase() !== "li") {
-      return [parseLists(child)];
+    return {
+      kind: "Header",
+      level,
+      content: children
+    };
+  })
+  .with("p", () => ({kind: "Paragraph", content: [children]}))
+  .with("em", () => ({kind: "Emphasis", content: children}))
+  .with("strong", () => ({kind: "Strong", content: children}))
+  .with("a", () => ({kind: "Link", href: href ?? "", content: children}))
+  .with("code", () => {
+    const result: any = {
+      kind: "Code",
+      code: children.join("")
+    };
+    if (className && className !=="") {
+      result.className = className;
     }
 
-    const item = parseListItem(child, itemKind);
-    const nestedLists = Array.from(child.children)
-      .filter((sub) => {
-        const subTag = sub.tagName.toLowerCase();
-        return subTag === "ul" || subTag === "ol";
-      })
-      .map((sub) => parseLists(sub));
-
-    return [item, ...nestedLists];
-  });
+    return result;
+  })
+  .with("pre", () => {
+    const firstChild = children[0];
+    
+    if (firstChild && typeof firstChild === "object" && firstChild.kind === "Code") {
+      const result: CodeBlockNode = {
+        kind: "CodeBlock",
+        content: firstChild.code.split("\n")
+      };
+      if (firstChild.className && firstChild.className.startsWith("language-")) {
+        result.language = firstChild.className.replace("language-", "")
+      }
+      return result;
+    }
+    return {
+      kind: "CodeBlock", 
+      content: firstChild.code.join("").split("\n")
+    };
+  })
+  .with("ul", () => ({kind: "BulletedList", content: children}))
+  .with("ol", () => ({kind: "NumberedList", content: children}))
+  .with("li", () => {
+    if (parentTag === "ul") { return { kind: "BulletItem", content: [children]};}
+    if (parentTag === "ol") { return { kind: "NumberedItem", content: [children]};}
+    throw new Error("Could not parse html");
+  })
+  .otherwise(() => null);
 }
 
-export function parseListItem(li: Element, itemKind: "BulletItem" | "NumberedItem"): BulletItemNode | NumberedItemNode {
-  const line = Array.from(li.childNodes)
-    .map(parseSpan)
-    .filter((span): span is Span => span !== undefined);
-
-  return match(itemKind)
-    .with("BulletItem", () => ({ kind: "BulletItem" as const, content: [line] }))
-    .with("NumberedItem", () => ({ kind: "NumberedItem" as const, content: [line] }))
-    .exhaustive();
-}
-
-export function parseCodeBlock(el: Element): Result<CodeBlockNode, Error> {
-  const codeElement = el.querySelector("code");
-
-  if (!codeElement) {
-    return Err(new Error("Could not parse html"));
-  }
-  const text = codeElement.textContent ?? "";
-  const lines = text.split("\n");
-
-  const classAttribute = codeElement.getAttribute("class") ?? "";
-  const language = classAttribute.startsWith("language-")
-    ? classAttribute.replace("language-", "")
-    : undefined;
-
-  return Ok({
-    kind: "CodeBlock",
-    content: lines,
-    ...(language ? { language } : {})
-  });
-}
