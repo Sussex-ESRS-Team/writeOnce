@@ -66,28 +66,41 @@ router.post("/", (req: Request<PostParams>, res: Response) => {
   }
 
   const lastRevision = db
-    .prepare(
-      "SELECT revision_number FROM post_revisions WHERE post_id = ? ORDER BY revision_number DESC LIMIT 1",
-    )
-    .get(req.params.postId) as { revision_number: number } | undefined;
+      .prepare(
+          "SELECT revision_number FROM post_revisions WHERE post_id = ? ORDER BY revision_number DESC LIMIT 1",
+      )
+      .get(req.params.postId) as { revision_number: number } | undefined;
 
   const revision_number = (lastRevision?.revision_number ?? 0) + 1;
   const id = randomUUID();
   const created_at = new Date().toISOString();
   const ir_json_str =
-    typeof ir_json === "string" ? ir_json : JSON.stringify(ir_json);
+      typeof ir_json === "string" ? ir_json : JSON.stringify(ir_json);
 
-  db.prepare(
-    "INSERT INTO post_revisions (id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  ).run(
-    id,
-    req.params.postId,
-    revision_number,
-    created_by,
-    created_at,
-    IR_SCHEMA_VERSION,
-    ir_json_str,
+  const insert = db.prepare(
+      "INSERT INTO post_revisions (id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
+  const updatePost = db.prepare(
+      "UPDATE posts SET updated_at = ? WHERE id = ?",
+  );
+
+  db.exec("BEGIN");
+  try {
+    insert.run(
+        id,
+        req.params.postId,
+        revision_number,
+        created_by,
+        created_at,
+        IR_SCHEMA_VERSION,
+        ir_json_str,
+    );
+    updatePost.run(created_at, req.params.postId);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
 
   res.status(201).json({ id, revision_number });
 });
