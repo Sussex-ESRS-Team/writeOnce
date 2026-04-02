@@ -1,211 +1,433 @@
 import { Ok, Err, Result } from "ts-results-es";
 import { match } from "ts-pattern";
-import type { CodeBlockNode, HeaderNode, IRNode, Line, ParagraphNode } from "./types";
+import type {
+  BulletItemNode,
+  CodeSpan,
+  CodeBlockNode,
+  EmphasisSpan,
+  IRNode,
+  IRSubNode,
+  LinkSpan,
+  ListBlock,
+  NumberedItemNode,
+  Span,
+  StrongSpan,
+} from "./types";
+import { isIRNode } from "./types";
 
+type Token =
+  | { type: "open"; tag: string; href?: string; className?: string }
+  | { type: "text"; content: string }
+  | { type: "close"; tag: string };
 
-export function parseHtmlToIR(_html: string): Result<IRNode[], Error> {
-  //tokeniser - can be done as a function
-  type Token = 
-  | {type: "open", tag: string, href?: string, className?: string}
-  | {type: "text", content: string}
-  | {type: "close", tag: string}
+type InlineSubNode = EmphasisSpan | StrongSpan | LinkSpan | CodeSpan;
 
+type BuildChild = string | InlineSubNode | BulletItemNode | NumberedItemNode | ListBlock;
+
+type BuildFrame = {
+  tag: string;
+  children: BuildChild[];
+  href?: string;
+  className?: string;
+  parentTag?: string;
+  nestedLists: ListBlock[];
+};
+
+type ParseState = {
+  parsedNodes: IRNode[];
+  stack: string[];
+  buildStack: BuildFrame[];
+};
+
+function parseTagName(raw: string): string {
+  return raw.replace(/\/$/, "").trim().split(/\s+/, 1)[0] ?? "";
+}
+
+function extractAttribute(raw: string, name: string): string | undefined {
+  const pattern = new RegExp(`${name}\\s*=\\s*([\"'])(.*?)\\1`);
+  const result = raw.match(pattern);
+  return result?.[2];
+}
+
+function isListBlockNode(node: unknown): node is ListBlock {
+  return (
+    typeof node === "object" &&
+    node !== null &&
+    "kind" in node &&
+    ((node as { kind?: string }).kind === "BulletedList" ||
+      (node as { kind?: string }).kind === "NumberedList")
+  );
+}
+
+function isInlineSubNode(node: unknown): node is InlineSubNode {
+  return (
+    typeof node === "object" &&
+    node !== null &&
+    "kind" in node &&
+    ((node as { kind?: string }).kind === "Emphasis" ||
+      (node as { kind?: string }).kind === "Strong" ||
+      (node as { kind?: string }).kind === "Link" ||
+      (node as { kind?: string }).kind === "Code")
+  );
+}
+
+function hasListBlock(children: BuildChild[]): boolean {
+  return children.some(
+    (child) => typeof child === "object" && child !== null && isListBlockNode(child),
+  );
+}
+
+function toInlineChildren(children: BuildChild[]): Span[] {
+  return children.filter(
+    (child): child is Span => typeof child === "string" || isInlineSubNode(child),
+  );
+}
+
+function collectListChildren(
+  children: BuildChild[],
+  kind: "ul",
+): Array<BulletItemNode | ListBlock>;
+function collectListChildren(
+  children: BuildChild[],
+  kind: "ol",
+): Array<NumberedItemNode | ListBlock>;
+function collectListChildren(children: BuildChild[], kind: "ul" | "ol") {
+  const result: Array<BulletItemNode | NumberedItemNode | ListBlock> = [];
+  const itemKind = kind === "ul" ? "BulletItem" : "NumberedItem";
+
+  for (const child of children) {
+    if (typeof child === "string") {
+      if (child.trim() === "") {
+        continue;
+      }
+      throw new Error("Could not parse html");
+    }
+
+    if (isListBlockNode(child)) {
+      result.push(child);
+      continue;
+    }
+
+    if (child.kind === itemKind) {
+      result.push(child);
+      continue;
+    }
+
+    throw new Error("Could not parse html");
+  }
+
+  return kind === "ul"
+    ? (result as Array<BulletItemNode | ListBlock>)
+    : (result as Array<NumberedItemNode | ListBlock>);
+}
+
+function isCodeSpan(value: unknown): value is CodeSpan {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "kind" in value &&
+    (value as { kind?: string }).kind === "Code"
+  );
+}
+
+function tokenizeHtml(html: string): Result<Token[], Error> {
   const tokens: Token[] = [];
-
   let i = 0;
 
-  while (i < _html.length) {
-    const char = _html[i]; //grab a character 
+  while (i < html.length) {
+    const char = html[i];
 
-    if (char === "<") { //check if its a tag
-
-      const end = _html.indexOf(">", i); //grab the position of the closing tag
+    if (char === "<") {
+      const end = html.indexOf(">", i);
       if (end === -1) {
-        return Err(new Error("Could not parse html")); //fails if index is negative
-      }
-      const inside = _html.slice(i+1, end);
-      const tag = inside.split(" ")[0]; 
-
-      //check link tag
-      let href = "";
-      if (tag === "a") {
-        const match = inside.match(/href="([^"]*)"/);
-        if (match) {
-          href = match[1]
-        }
-      }
-      //extract class attri
-      let className = "";
-
-      if (tag === "code") {
-        const match = inside.match(/class="([^"]*)"/);
-        if(match) {
-          className = match[1]
-        }
+        return Err(new Error("Could not parse html"));
       }
 
-      if(inside.startsWith("/")) {
-        tokens.push({ type: "close", tag: inside.slice(1).trim() });
-      }else {    
-        tokens.push({ type: "open", tag, href, className});
-      }
-      i = end + 1;
-
-    } else {
-
-      const nextTag = _html.indexOf("<", i);
-      if(nextTag === -1) {
-        const text = _html.slice(i);
-        tokens.push({type: "text", content: text })
-        break;
-      }
-      
-      const text = _html.slice(i, nextTag);
-      tokens.push({ type: "text", content: text });
-      i = nextTag;
-    }
-  }
-
-  const parsedNodes: IRNode[] = [];
-
-  const stack: string[] = [];
-  type BuildFrame = {
-    tag: string, 
-    children: any[], 
-    href?: string,
-    className?: string, 
-    parentTag?: string, 
-    nestedLists?: ListBlock[]};  
-  const buildStack: BuildFrame[] = [];
-
-  //if its a open you push it on to the stack and if its a close you have to check that it is a tag
-  for (const token of tokens) {
-    if (token.type === "open") {
-      stack.push(token.tag);
-
-      const parent = buildStack[buildStack.length -1];
-      buildStack.push({tag: token.tag, 
-        children: [], 
-        href: token.href, 
-        className: token.className, 
-        parentTag: parent?.tag, 
-        nestedLists: []})
-
-    } else if (token.type === "text") {
-
-      const current = buildStack[buildStack.length - 1];
-
-      if (current && token.content !== "") {
-        current.children.push(token.content);
-      }
-    } else if(token.type === "close") {
-      const top = stack.pop();
-
-      if(top !== token.tag) {
-        return Err(new Error("Could not parse html"))
-      }
-
-      const frame = buildStack.pop();
-      if(!frame) {
-        return Err(new Error("Could not parse html"))
-      }
-      let built;
-      try {
-        built = buildNode(
-          frame.tag, 
-          frame.children, 
-          frame.href, 
-          frame.parentTag,
-          frame.className);
-      } catch {
-        return Err(new Error("Could not parse html"))
-      }
-      if (buildStack.length === 0) {
-        if(built) {
-          parsedNodes.push(built);
-        }
-      } else {
-        const parent = buildStack[buildStack.length - 1];
-        if(!parent) {
+      const inside = html.slice(i + 1, end).trim();
+      if (inside.startsWith("/")) {
+        const closingTag = parseTagName(inside.slice(1));
+        if (closingTag === "") {
           return Err(new Error("Could not parse html"));
         }
-        if (built) {
-          if ((built.kind === "BulletedList" || built.kind === "NumberedList") && parent.tag === "li") {
-             parent.nestedLists?.push(built);
-          
-          } else {
-            parent.children.push(built);
-
-            if (frame.tag === "li" && frame.nestedLists && frame.nestedLists.length > 0) {
-              for (const list of frame.nestedLists) {
-                parent.children.push(list);
-              }
-            }
-          }
-        } else {
-          parent.children.push(...frame.children); 
+        tokens.push({ type: "close", tag: closingTag });
+      } else {
+        const tag = parseTagName(inside);
+        if (tag === "") {
+          return Err(new Error("Could not parse html"));
         }
-      } 
-    }
-  }
-  if (stack.length !== 0) {
-    return Err(new Error("Could not parse html"))
-  }
-  return Ok(parsedNodes);
-}
-
-
-export function buildNode(tag: string, children: any[], href?: string, parentTag?: string, className?: string): IRNode | null {
-  return match(tag)
-  .with("h1", "h2", "h3", "h4", "h5", "h6", () => {
-    const level = Number(tag[1]);
-
-    return {
-      kind: "Header",
-      level,
-      content: children
-    };
-  })
-  .with("p", () => ({kind: "Paragraph", content: [children]}))
-  .with("em", () => ({kind: "Emphasis", content: children}))
-  .with("strong", () => ({kind: "Strong", content: children}))
-  .with("a", () => ({kind: "Link", href: href ?? "", content: children}))
-  .with("code", () => {
-    const result: any = {
-      kind: "Code",
-      code: children.join("")
-    };
-    if (className && className !=="") {
-      result.className = className;
-    }
-
-    return result;
-  })
-  .with("pre", () => {
-    const firstChild = children[0];
-    
-    if (firstChild && typeof firstChild === "object" && firstChild.kind === "Code") {
-      const result: CodeBlockNode = {
-        kind: "CodeBlock",
-        content: firstChild.code.split("\n")
-      };
-      if (firstChild.className && firstChild.className.startsWith("language-")) {
-        result.language = firstChild.className.replace("language-", "")
+        tokens.push({
+          type: "open",
+          tag,
+          href: tag === "a" ? extractAttribute(inside, "href") : undefined,
+          className: tag === "code" ? extractAttribute(inside, "class") : undefined,
+        });
       }
-      return result;
+
+      i = end + 1;
+      continue;
     }
-    return {
-      kind: "CodeBlock", 
-      content: firstChild.code.join("").split("\n")
-    };
-  })
-  .with("ul", () => ({kind: "BulletedList", content: children}))
-  .with("ol", () => ({kind: "NumberedList", content: children}))
-  .with("li", () => {
-    if (parentTag === "ul") { return { kind: "BulletItem", content: [children]};}
-    if (parentTag === "ol") { return { kind: "NumberedItem", content: [children]};}
-    throw new Error("Could not parse html");
-  })
-  .otherwise(() => null);
+
+    const nextTag = html.indexOf("<", i);
+    if (nextTag === -1) {
+      const text = html.slice(i);
+      if (text !== "") {
+        tokens.push({ type: "text", content: text });
+      }
+      break;
+    }
+
+    const text = html.slice(i, nextTag);
+    if (text !== "") {
+      tokens.push({ type: "text", content: text });
+    }
+    i = nextTag;
+  }
+
+  return Ok(tokens);
 }
 
+function handleOpenToken(token: Extract<Token, { type: "open" }>, state: ParseState): void {
+  state.stack.push(token.tag);
+
+  const parent = state.buildStack[state.buildStack.length - 1];
+  state.buildStack.push({
+    tag: token.tag,
+    children: [],
+    href: token.href,
+    className: token.className,
+    parentTag: parent?.tag,
+    nestedLists: [],
+  });
+}
+
+function handleTextToken(
+  token: Extract<Token, { type: "text" }>,
+  state: ParseState,
+): Result<void, Error> {
+  const current = state.buildStack[state.buildStack.length - 1];
+  if (!current) {
+    if (token.content.trim() !== "") {
+      return Err(new Error("Could not parse html"));
+    }
+    return Ok(undefined);
+  }
+
+  current.children.push(token.content);
+  return Ok(undefined);
+}
+
+function handleCloseToken(
+  token: Extract<Token, { type: "close" }>,
+  state: ParseState,
+): Result<void, Error> {
+  const top = state.stack.pop();
+  if (top !== token.tag) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  const frame = state.buildStack.pop();
+  if (!frame) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  const parent = state.buildStack[state.buildStack.length - 1];
+  if (
+    frame.tag === "code" &&
+    frame.className &&
+    parent?.tag === "pre" &&
+    parent.className === undefined
+  ) {
+    parent.className = frame.className;
+  }
+
+  let built: IRNode | IRSubNode | null;
+  try {
+    built = buildNode(
+      frame.tag,
+      frame.children,
+      frame.href,
+      frame.parentTag,
+      frame.className,
+    );
+  } catch {
+    return Err(new Error("Could not parse html"));
+  }
+
+  if (state.buildStack.length === 0) {
+    if (built && isIRNode(built)) {
+      state.parsedNodes.push(built);
+      return Ok(undefined);
+    }
+
+    if (built) {
+      return Err(new Error("Could not parse html"));
+    }
+
+    return Ok(undefined);
+  }
+
+  if (!parent) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  if (built) {
+    if (isListBlockNode(built) && parent.tag === "li") {
+      parent.nestedLists.push(built);
+      return Ok(undefined);
+    }
+
+    if (isIRNode(built)) {
+      return Err(new Error("Could not parse html"));
+    }
+
+    parent.children.push(built);
+    if (frame.tag === "li" && frame.nestedLists.length > 0) {
+      parent.children.push(...frame.nestedLists);
+    }
+    return Ok(undefined);
+  }
+
+  parent.children.push(...frame.children);
+  return Ok(undefined);
+}
+
+export function parseHtmlToIR(_html: string): Result<IRNode[], Error> {
+  const tokenResult = tokenizeHtml(_html);
+  if (tokenResult.isErr()) {
+    return Err(tokenResult.error);
+  }
+
+  const tokens = tokenResult.value;
+
+  const state: ParseState = {
+    parsedNodes: [],
+    stack: [],
+    buildStack: [],
+  };
+
+  for (const token of tokens) {
+    if (token.type === "open") {
+      handleOpenToken(token, state);
+      continue;
+    }
+
+    if (token.type === "text") {
+      const textResult = handleTextToken(token, state);
+      if (textResult.isErr()) {
+        return Err(textResult.error);
+      }
+      continue;
+    }
+
+    const closeResult = handleCloseToken(token, state);
+    if (closeResult.isErr()) {
+      return Err(closeResult.error);
+    }
+  }
+
+  if (state.stack.length !== 0) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  return Ok(state.parsedNodes);
+}
+
+
+export function buildNode(
+  tag: string,
+  children: BuildChild[],
+  href?: string,
+  parentTag?: string,
+  className?: string,
+): IRNode | IRSubNode | null {
+  return match<string, IRNode | IRSubNode | null>(tag)
+    .with("h1", "h2", "h3", "h4", "h5", "h6", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      const level = Number(tag[1]);
+
+      return {
+        kind: "Header",
+        level,
+        content: toInlineChildren(children),
+      };
+    })
+    .with("p", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      return { kind: "Paragraph", content: [toInlineChildren(children)] };
+    })
+    .with("em", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      return { kind: "Emphasis", content: toInlineChildren(children) };
+    })
+    .with("strong", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      return { kind: "Strong", content: toInlineChildren(children) };
+    })
+    .with("a", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      return { kind: "Link", href: href ?? "", content: toInlineChildren(children) };
+    })
+    .with("code", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+      const code = toInlineChildren(children)
+        .map((child) => (typeof child === "string" ? child : ""))
+        .join("");
+
+      return {
+        kind: "Code",
+        code,
+      } as IRSubNode;
+    })
+    .with("pre", () => {
+      const firstChild = children[0];
+      if (isCodeSpan(firstChild)) {
+        const result: CodeBlockNode = {
+          kind: "CodeBlock",
+          content: firstChild.code.split("\n"),
+        };
+        if (className && className.startsWith("language-")) {
+          result.language = className.replace("language-", "");
+        }
+        return result;
+      }
+
+      if (children.every((child) => typeof child === "string")) {
+        return {
+          kind: "CodeBlock",
+          content: (children as string[]).join("").split("\n"),
+        };
+      }
+
+      throw new Error("Could not parse html");
+    })
+    .with("ul", () => ({ kind: "BulletedList", content: collectListChildren(children, "ul") }))
+    .with("ol", () => ({ kind: "NumberedList", content: collectListChildren(children, "ol") }))
+    .with("li", () => {
+      if (hasListBlock(children)) {
+        throw new Error("Could not parse html");
+      }
+
+      const itemContent = [toInlineChildren(children)];
+      if (parentTag === "ul") {
+        return { kind: "BulletItem", content: itemContent };
+      }
+      if (parentTag === "ol") {
+        return { kind: "NumberedItem", content: itemContent };
+      }
+
+      throw new Error("Could not parse html");
+    })
+    .otherwise(() => null);
+}

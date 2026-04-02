@@ -19,6 +19,26 @@ export type IRNode =
   | NumberedBlock
   | CodeBlockNode;
 
+/** Union of non-top-level nodes used inside IR nodes and parser internals. */
+export type IRSubNode =
+  | BulletItemNode
+  | NumberedItemNode
+  | EmphasisSpan
+  | StrongSpan
+  | LinkSpan
+  | CodeSpan;
+
+/** Runtime type guard for top-level IR nodes. */
+export function isIRNode(node: IRNode | IRSubNode): node is IRNode {
+  return (
+    node.kind === "Header" ||
+    node.kind === "Paragraph" ||
+    node.kind === "BulletedList" ||
+    node.kind === "NumberedList" ||
+    node.kind === "CodeBlock"
+  );
+}
+
 /** Markdown-style heading (# .. ######). */
 export interface HeaderNode {
   kind: "Header";
