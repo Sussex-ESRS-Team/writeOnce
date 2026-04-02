@@ -13,25 +13,25 @@ router.get("/", (_req, res) => {
   res.json(posts);
 });
 
+/** GET /api/posts/slug/:slug */
+router.get("/slug/:slug", (req, res) => {
+    const db = getDb();
+    const post = db
+        .prepare("SELECT * FROM posts WHERE slug = ?")
+        .get(req.params.slug);
+    if (!post) {
+        res.status(404).json({ error: "Post not found." });
+        return;
+    }
+    res.json(post);
+});
+
 /** GET /api/posts/:id */
 router.get("/:id", (req, res) => {
   const db = getDb();
   const post = db
     .prepare("SELECT * FROM posts WHERE id = ?")
     .get(req.params.id);
-  if (!post) {
-    res.status(404).json({ error: "Post not found." });
-    return;
-  }
-  res.json(post);
-});
-
-/** GET /api/posts/slug/:slug */
-router.get("/slug/:slug", (req, res) => {
-  const db = getDb();
-  const post = db
-    .prepare("SELECT * FROM posts WHERE slug = ?")
-    .get(req.params.slug);
   if (!post) {
     res.status(404).json({ error: "Post not found." });
     return;
@@ -99,6 +99,13 @@ router.patch("/:id", (req, res) => {
     values.push(title);
   }
   if (typeof published_revision_id === "string") {
+    const rev = db
+      .prepare("SELECT id FROM post_revisions WHERE id = ? AND post_id = ?")
+      .get(published_revision_id, req.params.id);
+    if (!rev) {
+      res.status(422).json({ error: "Revision does not belong to this post." });
+      return;
+    }
     fields.push("published_revision_id = ?", "published_at = ?");
     values.push(published_revision_id, now);
   }
