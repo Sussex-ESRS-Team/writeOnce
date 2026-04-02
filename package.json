@@ -25,6 +25,9 @@
   "dependencies": {
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "jsdom": "^29.0.1",
+    "ts-pattern": "^5.9.0",
+    "ts-results": "^3.3.0",
     "ts-results-es": "^7.0.0",
     "tslib": "^2.8.1"
   }

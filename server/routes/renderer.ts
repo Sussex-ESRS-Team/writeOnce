@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { IRNode } from "../../src/ir/types.ts";
-import { parseMarkdownToIR } from "../../src/ir/parser.ts";
-import { render_node } from "../../src/ir/renderer.ts";
+import { parseMarkdownToIR } from "../../src/ir/markdown_parser.ts";
+import { htmlRenderer } from "../../src/ir/html_renderer.ts";
 
 const router = Router();
 
@@ -27,7 +27,9 @@ router.post("/markdown", (req, res) => {
     return;
   }
 
-  const html = parseResult.value.map(render_node).join("");
+  const html = parseResult.value
+    .map(htmlRenderer.renderNode.bind(htmlRenderer))
+    .join("");
   res.json({ html });
 });
 
@@ -48,7 +50,9 @@ router.post("/ir", (req, res) => {
   }
 
   try {
-    const html = (nodes as IRNode[]).map(render_node).join("");
+    const html = (nodes as IRNode[])
+      .map(htmlRenderer.renderNode.bind(htmlRenderer))
+      .join("");
     res.json({ html });
   } catch {
     res.status(422).json({ error: "Failed to render IR nodes." });
