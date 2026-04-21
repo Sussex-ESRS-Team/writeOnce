@@ -297,7 +297,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '# ') }}>H1</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '## ') }}>H2</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '**', '**') }}><strong>B</strong></button>
-              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '_', '_') }}><em>I</em></button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '*', '*') }}><em>I</em></button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '- ') }}>• List</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '1. ') }}>1. List</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '`', '`') }}>&lt;/&gt;</button>
