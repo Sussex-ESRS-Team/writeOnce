@@ -71,27 +71,37 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     if (type === 'wrap') {
       const selected = value.slice(start, end)
       if (selected) {
-        newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end)
-        newStart = start + prefix.length
-        newEnd   = end   + prefix.length
+        if (selected.startsWith(prefix) && selected.endsWith(suffix)) {
+          const inner = selected.slice(prefix.length, selected.length - suffix.length)
+          newValue = value.slice(0, start) + inner + value.slice(end)
+          newStart = start
+          newEnd   = start + inner.length
+        } else {
+          newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end)
+          newStart = start + prefix.length
+          newEnd   = end   + prefix.length
+        }
       } else {
         newValue = value.slice(0, start) + prefix + suffix + value.slice(start)
         newStart = start + prefix.length
         newEnd   = newStart
       }
     } else {
-      const lineStart   = value.lastIndexOf('\n', start - 1) + 1
-      const lineEndRaw  = value.indexOf('\n', start)
-      const lineEnd     = lineEndRaw === -1 ? value.length : lineEndRaw
-      const line        = value.slice(lineStart, lineEnd)
+      const KNOWN_PREFIXES = ['## ', '# ', '1. ', '- ']
+      const lineStart  = value.lastIndexOf('\n', start - 1) + 1
+      const lineEndRaw = value.indexOf('\n', start)
+      const lineEnd    = lineEndRaw === -1 ? value.length : lineEndRaw
+      const line       = value.slice(lineStart, lineEnd)
 
       if (line.startsWith(prefix)) {
         newValue = value.slice(0, lineStart) + line.slice(prefix.length) + value.slice(lineEnd)
         newStart = Math.max(lineStart, start - prefix.length)
         newEnd   = newStart
       } else {
-        newValue = value.slice(0, lineStart) + prefix + line + value.slice(lineEnd)
-        newStart = lineStart + prefix.length + line.length
+        const existing = KNOWN_PREFIXES.find(p => line.startsWith(p)) ?? ''
+        const bare     = existing ? line.slice(existing.length) : line
+        newValue = value.slice(0, lineStart) + prefix + bare + value.slice(lineEnd)
+        newStart = lineStart + prefix.length + bare.length
         newEnd   = newStart
       }
     }
