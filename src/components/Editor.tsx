@@ -78,13 +78,21 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
           newEnd   = start + inner.length
         } else {
           newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end)
-          newStart = start + prefix.length
-          newEnd   = end   + prefix.length
+          newStart = start
+          newEnd   = end + prefix.length + suffix.length
         }
       } else {
-        newValue = value.slice(0, start) + prefix + suffix + value.slice(start)
-        newStart = start + prefix.length
-        newEnd   = newStart
+        const before = value.slice(start - prefix.length, start)
+        const after  = value.slice(start, start + suffix.length)
+        if (before === prefix && after === suffix) {
+          newValue = value.slice(0, start - prefix.length) + value.slice(start + suffix.length)
+          newStart = start - prefix.length
+          newEnd   = newStart
+        } else {
+          newValue = value.slice(0, start) + prefix + suffix + value.slice(start)
+          newStart = start + prefix.length
+          newEnd   = newStart
+        }
       }
     } else {
       const KNOWN_PREFIXES = ['## ', '# ', '1. ', '- ']
