@@ -10,7 +10,7 @@
 //   4. "Load" tab lists saved posts; selecting one fetches its latest revision
 //      and renders it back to HTML for display + reloads the Markdown into the editor
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
 
@@ -52,6 +52,56 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
   const [postList, setPostList]   = useState<Post[]>([])
   const [loadingPosts, setLoadingPosts] = useState(false)
   const [activePost, setActivePost]   = useState<Post | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // ── Toolbar format helper ─────────────────────────────────────────────────
+
+  const applyFormat = useCallback((type: 'wrap' | 'line-prefix', prefix: string, suffix = '') => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const end   = ta.selectionEnd
+    const value = ta.value
+
+    let newValue: string
+    let newStart: number
+    let newEnd:   number
+
+    if (type === 'wrap') {
+      const selected = value.slice(start, end)
+      if (selected) {
+        newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end)
+        newStart = start + prefix.length
+        newEnd   = end   + prefix.length
+      } else {
+        newValue = value.slice(0, start) + prefix + suffix + value.slice(start)
+        newStart = start + prefix.length
+        newEnd   = newStart
+      }
+    } else {
+      const lineStart   = value.lastIndexOf('\n', start - 1) + 1
+      const lineEndRaw  = value.indexOf('\n', start)
+      const lineEnd     = lineEndRaw === -1 ? value.length : lineEndRaw
+      const line        = value.slice(lineStart, lineEnd)
+
+      if (line.startsWith(prefix)) {
+        newValue = value.slice(0, lineStart) + line.slice(prefix.length) + value.slice(lineEnd)
+        newStart = Math.max(lineStart, start - prefix.length)
+        newEnd   = newStart
+      } else {
+        newValue = value.slice(0, lineStart) + prefix + line + value.slice(lineEnd)
+        newStart = lineStart + prefix.length + line.length
+        newEnd   = newStart
+      }
+    }
+
+    setMarkdown(newValue)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(newStart, newEnd)
+    })
+  }, [])
 
   // ── Save ──────────────────────────────────────────────────────────────────
 
@@ -233,7 +283,18 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               style={styles.titleInput}
             />
 
+            <div style={styles.toolbar}>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '# ') }}>H1</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '## ') }}>H2</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '**', '**') }}><strong>B</strong></button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '_', '_') }}><em>I</em></button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '- ') }}>• List</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '1. ') }}>1. List</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '`', '`') }}>&lt;/&gt;</button>
+            </div>
+
             <textarea
+              ref={textareaRef}
               value={markdown}
               onChange={e => setMarkdown(e.target.value)}
               style={styles.textarea}
@@ -452,6 +513,21 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'var(--accent)',
     padding: '0.1rem 0.4rem',
     borderRadius: '2px',
+  },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.1rem',
+    padding: '0.25rem 0.5rem',
+    borderBottom: '1px solid var(--paper-mid)',
+    background: 'var(--paper-mid)',
+    flexShrink: 0,
+  },
+  toolbarBtn: {
+    fontFamily: 'var(--mono)',
+    fontSize: '0.68rem',
+    padding: '0.2rem 0.45rem',
+    minWidth: 'unset',
   },
   titleInput: {
     fontFamily: 'var(--display)',
