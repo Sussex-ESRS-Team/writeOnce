@@ -121,6 +121,30 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     })
   }, [])
 
+  // ── Toolbar image helper ──────────────────────────────────────────────────
+
+  const insertImage = useCallback(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const end   = ta.selectionEnd
+    const value = ta.value
+    const alt   = value.slice(start, end) || 'alt text'
+    const template = `![${alt}](url)`
+
+    const newValue = value.slice(0, start) + template + value.slice(end)
+    // Position cursor over the 'url' placeholder so the user can type the URL
+    const urlStart = start + 2 + alt.length + 2
+    const urlEnd   = urlStart + 3
+
+    setMarkdown(newValue)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(urlStart, urlEnd)
+    })
+  }, [])
+
   // ── Save ──────────────────────────────────────────────────────────────────
 
   const handleSave = useCallback(async () => {
@@ -309,6 +333,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '- ') }}>• List</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '1. ') }}>1. List</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '`', '`') }}>&lt;/&gt;</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); insertImage() }} title="Insert image">&#128247;</button>
             </div>
 
             <textarea
