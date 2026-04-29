@@ -15,6 +15,7 @@ export interface IRDocument {
 export type IRNode =
   | HeaderNode
   | ParagraphNode
+  | ImageNode
   | BulletBlock
   | NumberedBlock
   | CodeBlockNode;
@@ -26,6 +27,7 @@ export type IRSubNode =
   | EmphasisSpan
   | StrongSpan
   | LinkSpan
+  | ImageSpan
   | CodeSpan;
 
 /** Runtime type guard for top-level IR nodes. */
@@ -33,6 +35,7 @@ export function isIRNode(node: IRNode | IRSubNode): node is IRNode {
   return (
     node.kind === "Header" ||
     node.kind === "Paragraph" ||
+    node.kind === "Image" ||
     node.kind === "BulletedList" ||
     node.kind === "NumberedList" ||
     node.kind === "CodeBlock"
@@ -50,6 +53,13 @@ export interface HeaderNode {
 export interface ParagraphNode {
   kind: "Paragraph";
   content: Paragraph;
+}
+
+/** Standalone image block referenced by hyperlink. */
+export interface ImageNode {
+  kind: "Image";
+  href: string;
+  alt?: string;
 }
 
 /** Paragraph container as a semantic text block. */
@@ -105,7 +115,7 @@ export interface CodeBlockNode {
 export type Line = Span[];
 
 /** Supported spans for richer inline formatting. */
-export type Span = string | EmphasisSpan | StrongSpan | CodeSpan | LinkSpan;
+export type Span = string | EmphasisSpan | StrongSpan | CodeSpan | LinkSpan | ImageSpan;
 
 export interface EmphasisSpan {
   kind: "Emphasis";
@@ -126,6 +136,12 @@ export interface LinkSpan {
   kind: "Link";
   href: string;
   content: Line;
+}
+
+export interface ImageSpan {
+  kind: "InlineImage";
+  href: string;
+  alt?: string;
 }
 
 /** Language/view identifier (e.g. "markdown", "org", "asciidoc"). */
@@ -149,6 +165,7 @@ export interface Renderer {
   renderLine(line: Line): string;
   renderHeader(node: HeaderNode): string;
   renderParagraph(node: ParagraphNode): string;
+  renderImage(node: ImageNode): string;
   renderCodeBlock(node: CodeBlockNode): string;
   renderListBlock(listblock: ListBlock, indent?: number): string;
   renderNode(node: IRNode): string;
