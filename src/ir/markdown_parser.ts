@@ -2,6 +2,8 @@ import type {
   BulletBlock,
   BulletItemNode,
   HeaderNode,
+  ImageSpan,
+  ImageNode,
   IRNode,
   Line,
   ListBlock,
@@ -9,6 +11,7 @@ import type {
   NumberedBlock,
   NumberedItemNode,
   ParagraphNode,
+  Span,
 } from "./types";
 import { Ok, Err, Result } from "ts-results-es";
 export function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> {
@@ -18,6 +21,13 @@ export function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> {
     let i = 0;
 
     while (i < lines.length) {
+      const imageNode = parseImageNode(lines[i]);
+      if (imageNode) {
+        nodes.push(imageNode);
+        i++;
+        continue;
+      }
+
       if (isHeader(lines[i])) {
         const result = getHeaderNode(lines[i]);
         if (result.isOk()) {
@@ -54,11 +64,12 @@ function getHeaderNode(line: string): Result<HeaderNode, Error> {
   if (match) {
     const hashes = match[1];
     const text = match[2];
+    const content = parseInlineSpans(text);
 
     const headerNode: HeaderNode = {
       kind: "Header",
       level: hashes.length,
-      content: [text],
+      content: content.length > 0 ? content : [""],
     };
 
     return Ok(headerNode);
@@ -74,7 +85,7 @@ function getParagraphNode(
   let i = start;
 
   while (i < lines.length && lines[i].trim() !== "") {
-    paragraphLines.push([lines[i]]);
+    paragraphLines.push(parseInlineSpans(lines[i]));
     i++;
   }
 
@@ -132,7 +143,7 @@ function getBulletBlock(
     const parsedLine = parseBulletedLine(lines[i]);
     const bulletItemNode: BulletItemNode = {
       kind: "BulletItem",
-      content: [[parsedLine?.text ?? lines[i]]],
+      content: [parseInlineSpans(parsedLine?.text ?? lines[i])],
       markerByLanguage: parsedLine?.markerByLanguage,
     };
     block.push(bulletItemNode);
@@ -154,7 +165,7 @@ function getNumberedBlock(
     const parsedLine = parseNumberedLine(lines[i]);
     const numberedItemNode: NumberedItemNode = {
       kind: "NumberedItem",
-      content: [[parsedLine?.text ?? lines[i]]],
+      content: [parseInlineSpans(parsedLine?.text ?? lines[i])],
     };
     block.push(numberedItemNode);
     i++;
@@ -162,4 +173,106 @@ function getNumberedBlock(
 
   const nblock: NumberedBlock = { kind: "NumberedList", content: block };
   return { numberedblock: nblock, endIndex: i };
+}
+
+function parseInlineSpans(text: string): Line {
+  const spans: Span[] = [];
+  let index = 0;
+
+  while (index < text.length) {
+    const wikiStart = text.indexOf("![[", index);
+    const markdownStart = text.indexOf("![", index);
+
+    let start = -1;
+    let syntax: "wiki" | "markdown" | null = null;
+
+    if (wikiStart !== -1 && (markdownStart === -1 || wikiStart <= markdownStart)) {
+      start = wikiStart;
+      syntax = "wiki";
+    } else if (markdownStart !== -1) {
+      start = markdownStart;
+      syntax = "markdown";
+    }
+
+    if (start === -1) {
+      spans.push(text.slice(index));
+      break;
+    }
+
+    if (start > index) {
+      spans.push(text.slice(index, start));
+    }
+
+    if (syntax === "wiki") {
+      const end = text.indexOf("]]", start + 3);
+      if (end === -1) {
+        spans.push(text.slice(start));
+        break;
+      }
+
+      const raw = text.slice(start + 3, end);
+      const [href, alt] = raw.split("|", 2);
+      spans.push(buildImageSpan(href, alt));
+      index = end + 2;
+      continue;
+    }
+
+    const altEnd = text.indexOf("](", start + 2);
+    const hrefEnd = altEnd === -1 ? -1 : text.indexOf(")", altEnd + 2);
+    if (altEnd === -1 || hrefEnd === -1) {
+      spans.push(text.slice(start, start + 2));
+      index = start + 2;
+      continue;
+    }
+
+    const alt = text.slice(start + 2, altEnd);
+    const href = text.slice(altEnd + 2, hrefEnd);
+    spans.push(buildImageSpan(href, alt));
+    index = hrefEnd + 1;
+  }
+
+  return spans;
+}
+
+function parseImageNode(line: string): ImageNode | null {
+  const trimmed = line.trim();
+
+  if (trimmed.startsWith("![[") && trimmed.endsWith("]]")) {
+    const raw = trimmed.slice(3, -2);
+    const [href, alt] = raw.split("|", 2);
+    return buildImageNode(href, alt);
+  }
+
+  const markdownMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+  if (markdownMatch) {
+    return buildImageNode(markdownMatch[2], markdownMatch[1]);
+  }
+
+  return null;
+}
+
+function buildImageSpan(href: string, alt?: string): ImageSpan {
+  const image: ImageSpan = {
+    kind: "InlineImage",
+    href,
+  };
+
+  if (typeof alt === "string" && alt.length > 0) {
+    image.alt = alt;
+  }
+
+  return image;
+}
+
+function buildImageNode(href: string, alt?: string): ImageNode {
+  const image: ImageNode = {
+    kind: "Image",
+    href,
+  };
+
+  if (typeof alt === "string" && alt.length > 0) {
+    image.alt = alt;
+  }
+
+  return image;
 }

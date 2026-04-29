@@ -4,6 +4,7 @@ import type {
   IRNode,
   HeaderNode,
   ParagraphNode,
+  ImageNode,
   CodeBlockNode,
   Line,
   Span,
@@ -41,6 +42,10 @@ export const htmlRenderer: Renderer = {
           "</a>"
         );
       })
+      .with({ kind: "InlineImage" }, (image) => {
+        const alt = image.alt ?? "";
+        return `<img src="${image.href}" alt="${alt}">`;
+      })
       .exhaustive();
   },
 
@@ -69,6 +74,11 @@ export const htmlRenderer: Renderer = {
       paragraph_to_render.push(htmlRenderer.renderLine(value));
     }
     return "<p>" + paragraph_to_render.join("<br>") + "</p>";
+  },
+
+  renderImage(node: ImageNode): string {
+    const alt = node.alt ?? "";
+    return `<img src="${node.href}" alt="${alt}">`;
   },
 
   renderCodeBlock(node: CodeBlockNode): string {
@@ -110,6 +120,7 @@ export const htmlRenderer: Renderer = {
       .with({ kind: "Paragraph" }, (paragraph) =>
         htmlRenderer.renderParagraph(paragraph),
       )
+      .with({ kind: "Image" }, (image) => htmlRenderer.renderImage(image))
       .with({ kind: "BulletedList" }, (bulletedList) =>
         htmlRenderer.renderListBlock(bulletedList),
       )

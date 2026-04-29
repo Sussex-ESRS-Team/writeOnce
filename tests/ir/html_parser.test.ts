@@ -39,7 +39,7 @@ describe("parseHtmlToIR", () => {
   describe("Paragraphs and Inline Spans", () => {
     it("parses paragraph text and inline formatting spans", () => {
       const html =
-        '<p>Hello <em>world</em>, this is <strong>bold</strong>, <code>x()</code>, and <a href="https://example.com">a link</a>.</p>';
+        '<p>Hello <em>world</em>, this is <strong>bold</strong>, <code>x()</code>, <img src="https://example.com/cat.png" alt="Cat">, and <a href="https://example.com">a link</a>.</p>';
       const result = parseHtmlToIR(html);
 
       expect(result.isOk()).toBe(true);
@@ -60,6 +60,8 @@ describe("parseHtmlToIR", () => {
           { kind: "Strong", content: ["bold"] },
           ", ",
           { kind: "Code", code: "x()" },
+          ", ",
+          { kind: "InlineImage", href: "https://example.com/cat.png", alt: "Cat" },
           ", and ",
           {
             kind: "Link",
@@ -112,6 +114,20 @@ describe("parseHtmlToIR", () => {
             content: ["very ", { kind: "Emphasis", content: ["important"] }],
           },
         ],
+      ]);
+    });
+
+    it("parses standalone image elements", () => {
+      const html = '<img src="/images/logo.png" alt="Logo">';
+      const result = parseHtmlToIR(html);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isErr()) {
+        throw result.error;
+      }
+
+      expect(result.value).toEqual([
+        { kind: "Image", href: "/images/logo.png", alt: "Logo" },
       ]);
     });
   });

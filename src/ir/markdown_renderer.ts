@@ -5,6 +5,7 @@ import type {
   Line,
   HeaderNode,
   ParagraphNode,
+  ImageNode,
   CodeBlockNode,
   ListBlock,
   IRNode,
@@ -28,6 +29,12 @@ export const markdownRenderer: Renderer = {
       .with({ kind: "Link" }, (link) => {
         const linkLine = this.renderLine(link.content);
         return `[${linkLine}](${link.href})`;
+      })
+      .with({ kind: "InlineImage" }, (image) => {
+        if (image.alt && image.alt.length > 0) {
+          return `![${image.alt}](${image.href})`;
+        }
+        return `![[${image.href}]]`;
       })
       .with({ kind: "Code" }, (code) => `\`${code.code}\``)
       .exhaustive();
@@ -53,6 +60,12 @@ export const markdownRenderer: Renderer = {
 
     const paraString = tempLines.join("\n");
     return paraString;
+  },
+  renderImage: function (node: ImageNode): string {
+    if (node.alt && node.alt.length > 0) {
+      return `![${node.alt}](${node.href})`;
+    }
+    return `![[${node.href}]]`;
   },
   renderCodeBlock: function (node: CodeBlockNode): string {
     let tempLines: string[] = [];
@@ -112,6 +125,7 @@ export const markdownRenderer: Renderer = {
       .with({ kind: "Paragraph" }, (paragraph) =>
         this.renderParagraph(paragraph),
       )
+      .with({ kind: "Image" }, (image) => this.renderImage(image))
       .with({ kind: "BulletedList" }, (bulletedList) =>
         this.renderListBlock(bulletedList),
       )

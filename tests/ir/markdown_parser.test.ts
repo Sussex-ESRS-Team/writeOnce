@@ -108,6 +108,20 @@ This is line three.`;
       }
     });
 
+    it("should parse inline image hyperlinks inside a paragraph", () => {
+      const markdown = "Look at ![[./images/cat.png]] please.";
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const paragraph = result.value[0] as ParagraphNode;
+        expect(paragraph.kind).toBe("Paragraph");
+        expect(paragraph.content).toEqual([
+          ["Look at ", { kind: "InlineImage", href: "./images/cat.png" }, " please."],
+        ]);
+      }
+    });
+
     it("should separate paragraphs by blank lines", () => {
       const markdown = `First paragraph.
 
