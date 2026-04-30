@@ -94,6 +94,16 @@ describe("htmlRenderer", () => {
       ).toBe('<a href="https://example.com">Click here</a>');
     });
 
+    it("renders image span", () => {
+      expect(
+        htmlRenderer.renderSpan({
+          kind: "InlineImage",
+          href: "https://example.com/cat.png",
+          alt: "Cat",
+        }),
+      ).toBe('<img src="https://example.com/cat.png" alt="Cat">');
+    });
+
     it("renders nested emphasis within strong", () => {
       const span = {
         kind: "Strong" as const,

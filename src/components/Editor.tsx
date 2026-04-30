@@ -10,7 +10,7 @@
 //   4. "Load" tab lists saved posts; selecting one fetches its latest revision
 //      and renders it back to HTML for display + reloads the Markdown into the editor
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
 
@@ -52,6 +52,98 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
   const [postList, setPostList]   = useState<Post[]>([])
   const [loadingPosts, setLoadingPosts] = useState(false)
   const [activePost, setActivePost]   = useState<Post | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // ── Toolbar format helper ─────────────────────────────────────────────────
+
+  const applyFormat = useCallback((type: 'wrap' | 'line-prefix', prefix: string, suffix = '') => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const end   = ta.selectionEnd
+    const value = ta.value
+
+    let newValue: string
+    let newStart: number
+    let newEnd:   number
+
+    if (type === 'wrap') {
+      const selected = value.slice(start, end)
+      if (selected) {
+        if (selected.startsWith(prefix) && selected.endsWith(suffix)) {
+          const inner = selected.slice(prefix.length, selected.length - suffix.length)
+          newValue = value.slice(0, start) + inner + value.slice(end)
+          newStart = start
+          newEnd   = start + inner.length
+        } else {
+          newValue = value.slice(0, start) + prefix + selected + suffix + value.slice(end)
+          newStart = start
+          newEnd   = end + prefix.length + suffix.length
+        }
+      } else {
+        const before = value.slice(start - prefix.length, start)
+        const after  = value.slice(start, start + suffix.length)
+        if (before === prefix && after === suffix) {
+          newValue = value.slice(0, start - prefix.length) + value.slice(start + suffix.length)
+          newStart = start - prefix.length
+          newEnd   = newStart
+        } else {
+          newValue = value.slice(0, start) + prefix + suffix + value.slice(start)
+          newStart = start + prefix.length
+          newEnd   = newStart
+        }
+      }
+    } else {
+      const KNOWN_PREFIXES = ['## ', '# ', '1. ', '- ']
+      const lineStart  = value.lastIndexOf('\n', start - 1) + 1
+      const lineEndRaw = value.indexOf('\n', start)
+      const lineEnd    = lineEndRaw === -1 ? value.length : lineEndRaw
+      const line       = value.slice(lineStart, lineEnd)
+
+      if (line.startsWith(prefix)) {
+        newValue = value.slice(0, lineStart) + line.slice(prefix.length) + value.slice(lineEnd)
+        newStart = Math.max(lineStart, start - prefix.length)
+        newEnd   = newStart
+      } else {
+        const existing = KNOWN_PREFIXES.find(p => line.startsWith(p)) ?? ''
+        const bare     = existing ? line.slice(existing.length) : line
+        newValue = value.slice(0, lineStart) + prefix + bare + value.slice(lineEnd)
+        newStart = lineStart + prefix.length + bare.length
+        newEnd   = newStart
+      }
+    }
+
+    setMarkdown(newValue)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(newStart, newEnd)
+    })
+  }, [])
+
+  // ── Toolbar image helper ──────────────────────────────────────────────────
+
+  const insertImage = useCallback(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+
+    const start = ta.selectionStart
+    const end   = ta.selectionEnd
+    const value = ta.value
+    const alt   = value.slice(start, end) || 'alt text'
+    const template = `![${alt}](url)`
+
+    const newValue = value.slice(0, start) + template + value.slice(end)
+    // Position cursor over the 'url' placeholder so the user can type the URL
+    const urlStart = start + 2 + alt.length + 2
+    const urlEnd   = urlStart + 3
+
+    setMarkdown(newValue)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(urlStart, urlEnd)
+    })
+  }, [])
 
   // ── Save ──────────────────────────────────────────────────────────────────
 
@@ -233,7 +325,19 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               style={styles.titleInput}
             />
 
+            <div style={styles.toolbar}>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '# ') }}>H1</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '## ') }}>H2</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '**', '**') }}><strong>B</strong></button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '*', '*') }}><em>I</em></button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '- ') }}>• List</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '1. ') }}>1. List</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '`', '`') }}>&lt;/&gt;</button>
+              <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); insertImage() }} title="Insert image">&#128247;</button>
+            </div>
+
             <textarea
+              ref={textareaRef}
               value={markdown}
               onChange={e => setMarkdown(e.target.value)}
               style={styles.textarea}
@@ -452,6 +556,21 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'var(--accent)',
     padding: '0.1rem 0.4rem',
     borderRadius: '2px',
+  },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.1rem',
+    padding: '0.25rem 0.5rem',
+    borderBottom: '1px solid var(--paper-mid)',
+    background: 'var(--paper-mid)',
+    flexShrink: 0,
+  },
+  toolbarBtn: {
+    fontFamily: 'var(--mono)',
+    fontSize: '0.68rem',
+    padding: '0.2rem 0.45rem',
+    minWidth: 'unset',
   },
   titleInput: {
     fontFamily: 'var(--display)',

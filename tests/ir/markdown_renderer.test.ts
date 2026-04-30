@@ -85,6 +85,22 @@ describe("markdownRenderer", () => {
       );
     });
 
+    it("renders an image without alt text as a wiki link", () => {
+      expect(
+        markdownRenderer.renderSpan({ kind: "InlineImage", href: "./img/cat.png" }),
+      ).toBe("![[./img/cat.png]]");
+    });
+
+    it("renders an image with alt text as markdown image syntax", () => {
+      expect(
+        markdownRenderer.renderSpan({
+          kind: "InlineImage",
+          href: "https://example.com/cat.png",
+          alt: "Cat",
+        }),
+      ).toBe("![Cat](https://example.com/cat.png)");
+    });
+
     it("renders empty emphasis markers for empty content", () => {
       expect(
         markdownRenderer.renderSpan({ kind: "Emphasis", content: [] }),

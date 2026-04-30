@@ -5,6 +5,8 @@ import type {
   CodeSpan,
   CodeBlockNode,
   EmphasisSpan,
+  ImageSpan,
+  ImageNode,
   IRNode,
   IRSubNode,
   LinkSpan,
@@ -17,10 +19,11 @@ import { isIRNode } from "./types";
 
 type Token =
   | { type: "open"; tag: string; href?: string; className?: string }
+  | { type: "self"; tag: string; href?: string; alt?: string; className?: string }
   | { type: "text"; content: string }
   | { type: "close"; tag: string };
 
-type InlineSubNode = EmphasisSpan | StrongSpan | LinkSpan | CodeSpan;
+type InlineSubNode = EmphasisSpan | StrongSpan | LinkSpan | ImageSpan | CodeSpan;
 
 type BuildChild = string | InlineSubNode | BulletItemNode | NumberedItemNode | ListBlock;
 
@@ -67,6 +70,7 @@ function isInlineSubNode(node: unknown): node is InlineSubNode {
     ((node as { kind?: string }).kind === "Emphasis" ||
       (node as { kind?: string }).kind === "Strong" ||
       (node as { kind?: string }).kind === "Link" ||
+      (node as { kind?: string }).kind === "InlineImage" ||
       (node as { kind?: string }).kind === "Code")
   );
 }
@@ -156,9 +160,15 @@ function tokenizeHtml(html: string): Result<Token[], Error> {
           return Err(new Error("Could not parse html"));
         }
         tokens.push({
-          type: "open",
+          type: tag === "img" ? "self" : "open",
           tag,
-          href: tag === "a" ? extractAttribute(inside, "href") : undefined,
+          href:
+            tag === "img"
+              ? extractAttribute(inside, "src")
+              : tag === "a"
+                ? extractAttribute(inside, "href")
+                : undefined,
+          alt: tag === "img" ? extractAttribute(inside, "alt") : undefined,
           className: tag === "code" ? extractAttribute(inside, "class") : undefined,
         });
       }
@@ -198,6 +208,40 @@ function handleOpenToken(token: Extract<Token, { type: "open" }>, state: ParseSt
     parentTag: parent?.tag,
     nestedLists: [],
   });
+}
+
+function handleSelfClosingToken(
+  token: Extract<Token, { type: "self" }>,
+  state: ParseState,
+): Result<void, Error> {
+  const parent = state.buildStack[state.buildStack.length - 1];
+  let built: IRNode | IRSubNode | null;
+
+  try {
+    built = buildNode(token.tag, [], token.href, parent?.tag, token.className, token.alt);
+  } catch {
+    return Err(new Error("Could not parse html"));
+  }
+
+  if (!built) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  if (!parent) {
+    if (isIRNode(built)) {
+      state.parsedNodes.push(built);
+      return Ok(undefined);
+    }
+
+    return Err(new Error("Could not parse html"));
+  }
+
+  if (isIRNode(built)) {
+    return Err(new Error("Could not parse html"));
+  }
+
+  parent.children.push(built);
+  return Ok(undefined);
 }
 
 function handleTextToken(
@@ -311,6 +355,14 @@ export function parseHtmlToIR(_html: string): Result<IRNode[], Error> {
       continue;
     }
 
+    if (token.type === "self") {
+      const selfResult = handleSelfClosingToken(token, state);
+      if (selfResult.isErr()) {
+        return Err(selfResult.error);
+      }
+      continue;
+    }
+
     if (token.type === "text") {
       const textResult = handleTextToken(token, state);
       if (textResult.isErr()) {
@@ -339,6 +391,7 @@ export function buildNode(
   href?: string,
   parentTag?: string,
   className?: string,
+  alt?: string,
 ): IRNode | IRSubNode | null {
   return match<string, IRNode | IRSubNode | null>(tag)
     .with("h1", "h2", "h3", "h4", "h5", "h6", () => {
@@ -376,6 +429,13 @@ export function buildNode(
         throw new Error("Could not parse html");
       }
       return { kind: "Link", href: href ?? "", content: toInlineChildren(children) };
+    })
+    .with("img", () => {
+      if (parentTag === undefined) {
+        return { kind: "Image", href: href ?? "", alt } satisfies ImageNode;
+      }
+
+      return { kind: "InlineImage", href: href ?? "", alt } satisfies ImageSpan;
     })
     .with("code", () => {
       if (hasListBlock(children)) {
