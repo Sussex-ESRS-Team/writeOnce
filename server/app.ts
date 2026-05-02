@@ -33,5 +33,15 @@ export function createApp() {
   app.use("/api/posts", postsRouter);
   app.use("/api/posts/:postId/revisions", revisionsRouter);
 
+  // JSON error handler — convert thrown errors to clean JSON responses
+  // (err, req, res, next) signature is required by Express to mark it as error handler
+  app.use((err: unknown, _req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    if (res.headersSent) return next(err as Error);
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  });
+
   return app;
 }

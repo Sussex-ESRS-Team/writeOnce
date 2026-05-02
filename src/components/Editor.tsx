@@ -13,6 +13,7 @@
 import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
+import { markdownRenderer } from '../ir/markdown_renderer'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -161,7 +162,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
       let post = activePost
       if (!post) {
         setStatus({ kind: 'working', message: 'Creating post record…' })
-        post = await posts.create(slugify(title), title.trim(), userId)
+        post = await posts.create(slugify(title), title.trim())
         setActivePost(post)
       } else if (post.title !== title.trim()) {
         post = await posts.update(post.id, { title: title.trim() })
@@ -223,13 +224,9 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
       setPreviewHtml(html)
       setActivePost(post)
       setTitle(post.title)
-      // We don't try to reconstruct Markdown from IR here — that's IR→MD (week 9).
-      // Instead show a note in the editor.
-      setMarkdown(
-        `<!-- Post loaded from IR. Markdown reconstruction is not yet implemented.\n` +
-        `     Edit here to create a new revision. -->\n\n` +
-        `# ${post.title}\n`
-      )
+      // Reconstruct Markdown from IR
+      const reconstructed = markdownRenderer.renderDocument({ kind: 'Document', nodes: ir })
+      setMarkdown(reconstructed)
       setView('editor')
       setStatus({ kind: 'ok', message: `Loaded "${post.title}" · revision ${latest.id.slice(0, 8)}` })
     } catch (err: unknown) {

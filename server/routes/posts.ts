@@ -41,31 +41,43 @@ router.get("/:id", (req, res) => {
 
 /** POST /api/posts - create a post */
 router.post("/", (req, res) => {
-  const { slug, title, created_by } = req.body as {
+  const { slug, title } = req.body as {
     slug?: unknown;
     title?: unknown;
-    created_by?: unknown;
   };
 
-  if (
-    typeof slug !== "string" ||
-    typeof title !== "string" ||
-    typeof created_by !== "string"
-  ) {
-    res.status(400).json({
-      error: "'slug', 'title', and 'created_by' string fields are required.",
-    });
+  const email = req.session.userEmail;
+  if (!email) {
+    res.status(401).json({ error: "Not logged in." });
+    return;
+  }
+
+  if (typeof slug !== "string" || typeof title !== "string") {
+    res.status(400).json({ error: "'slug' and 'title' string fields are required." });
     return;
   }
 
   const db = getDb();
+  // Check for existing slug to give a clear 409 conflict response
+  const existing = db.prepare("SELECT id FROM posts WHERE slug = ?").get(slug);
+  if (existing) {
+    res.status(409).json({ error: "Post slug already exists." });
+    return;
+  }
   const id = randomUUID();
   const now = new Date().toISOString();
 
+  const user = db.prepare("SELECT id FROM users WHERE email = ?").get(email) as
+    | { id: string }
+    | undefined;
+  if (!user) {
+    res.status(401).json({ error: "Not logged in." });
+    return;
+  }
+
   db.prepare(
     "INSERT INTO posts (id, slug, title, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-  ).run(id, slug, title, created_by, now, now);
-
+  ).run(id, slug, title, user.id, now, now);
   res.status(201).json({ id });
 });
 

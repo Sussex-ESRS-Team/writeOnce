@@ -19,6 +19,7 @@ async function req<T>(
     const text = await res.text().catch(() => res.statusText)
     throw new Error(text || `HTTP ${res.status}`)
   }
+  if (res.status === 204) return Promise.resolve(undefined as unknown as T)
   return res.json() as Promise<T>
 }
 
@@ -52,8 +53,8 @@ export interface Post {
 
 export const posts = {
   list: ()                            => req<Post[]>('GET', '/posts'),
-  create: (slug: string, title: string, created_by: string) =>
-    req<Post>('POST', '/posts', { slug, title, created_by }),
+  create: (slug: string, title: string) =>
+    req<Post>('POST', '/posts', { slug, title }),
   update: (id: string, patch: Partial<Pick<Post, 'slug' | 'title' | 'published_revision_id'>>) =>
     req<Post>('PATCH', `/posts/${id}`, patch),
   delete: (id: string)                => req<void>('DELETE', `/posts/${id}`),
@@ -84,7 +85,7 @@ export const parse = (markdown: string) =>
   req<{ nodes: unknown[] }>('POST', '/parse', { markdown })
 
 export const renderIR = (irJson: unknown) =>
-  req<{ html: string }>('POST', '/render/ir', { ir_json: JSON.stringify(irJson) })
+  req<{ html: string }>('POST', '/render/ir', { nodes: irJson })
 
 export const renderMarkdown = (markdown: string) =>
   req<{ html: string }>('POST', '/render/markdown', { markdown })

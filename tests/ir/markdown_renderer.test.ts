@@ -332,6 +332,32 @@ describe("markdownRenderer", () => {
       expect(markdownRenderer.renderListBlock(list)).toBe("- Item");
     });
 
+    it("preserves mixed bullet markers (* and -)", () => {
+      const list: BulletBlock = {
+        kind: "BulletedList",
+        content: [
+          {
+            kind: "BulletItem",
+            content: [["First item"]],
+            markerByLanguage: { markdown: "-" },
+          },
+          {
+            kind: "BulletItem",
+            content: [["Second item"]],
+            markerByLanguage: { markdown: "*" },
+          },
+          {
+            kind: "BulletItem",
+            content: [["Third item"]],
+            markerByLanguage: { markdown: "-" },
+          },
+        ],
+      };
+      expect(markdownRenderer.renderListBlock(list)).toBe(
+        "- First item\n* Second item\n- Third item",
+      );
+    });
+
     it("renders a simple numbered list", () => {
       const list: NumberedBlock = {
         kind: "NumberedList",
