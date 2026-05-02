@@ -15,7 +15,7 @@ router.get("/", (req: Request<PostParams>, res: Response) => {
   const db = getDb();
   const revisions = db
     .prepare(
-      "SELECT id, post_id, revision_number, created_by, created_at, ir_schema_version FROM post_revisions WHERE post_id = ? ORDER BY revision_number ASC",
+      "SELECT id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json FROM post_revisions WHERE post_id = ? ORDER BY revision_number DESC",
     )
     .all(req.params.postId);
   res.json(revisions);
@@ -36,15 +36,16 @@ router.get("/:revisionId", (req: Request<RevisionParams>, res: Response) => {
 
 /** POST /api/posts/:postId/revisions - create a new revision */
 router.post("/", (req: Request<PostParams>, res: Response) => {
-  const { created_by, ir_json } = req.body as {
-    created_by?: unknown;
+  const { ir_json } = req.body as {
     ir_json?: unknown;
   };
 
-  if (typeof created_by !== "string") {
-    res.status(400).json({ error: "'created_by' string field is required." });
+  const email = req.session.userEmail;
+  if (!email) {
+    res.status(401).json({ error: "Not logged in." });
     return;
   }
+
   if (
     typeof ir_json !== "string" &&
     (typeof ir_json !== "object" || ir_json === null)
@@ -77,6 +78,14 @@ router.post("/", (req: Request<PostParams>, res: Response) => {
   const ir_json_str =
       typeof ir_json === "string" ? ir_json : JSON.stringify(ir_json);
 
+  const user = db.prepare("SELECT id FROM users WHERE email = ?").get(email) as
+    | { id: string }
+    | undefined;
+  if (!user) {
+    res.status(401).json({ error: "Not logged in." });
+    return;
+  }
+
   const insert = db.prepare(
       "INSERT INTO post_revisions (id, post_id, revision_number, created_by, created_at, ir_schema_version, ir_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
@@ -87,13 +96,13 @@ router.post("/", (req: Request<PostParams>, res: Response) => {
   db.exec("BEGIN");
   try {
     insert.run(
-        id,
-        req.params.postId,
-        revision_number,
-        created_by,
-        created_at,
-        IR_SCHEMA_VERSION,
-        ir_json_str,
+      id,
+      req.params.postId,
+      revision_number,
+      user.id,
+      created_at,
+      IR_SCHEMA_VERSION,
+      ir_json_str,
     );
     updatePost.run(created_at, req.params.postId);
     db.exec("COMMIT");

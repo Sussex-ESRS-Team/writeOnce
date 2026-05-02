@@ -1,6 +1,7 @@
 import type {
   BulletBlock,
   BulletItemNode,
+  CodeBlockNode,
   HeaderNode,
   ImageSpan,
   ImageNode,
@@ -25,6 +26,13 @@ export function parseMarkdownToIR(markdown: string): Result<IRNode[], Error> {
       if (imageNode) {
         nodes.push(imageNode);
         i++;
+        continue;
+      }
+
+      if (isFencedCodeBlockStart(lines[i])) {
+        const codeBlock = getCodeBlock(lines, i);
+        nodes.push(codeBlock.codeblock);
+        i = codeBlock.endIndex;
         continue;
       }
 
@@ -132,6 +140,46 @@ function isHeader(line: string): boolean {
   return /^(#{1,6})\s*(.*)$/.test(line);
 }
 
+function isFencedCodeBlockStart(line: string): boolean {
+  return /^```/.test(line.trim());
+}
+
+function parseFencedCodeBlockStart(
+  line: string,
+): { language?: string } | null {
+  const match = line.trim().match(/^```\s*([^`]*)\s*$/);
+  if (!match) return null;
+
+  const language = match[1].trim();
+  return language.length > 0 ? { language } : {};
+}
+
+function getCodeBlock(
+  lines: string[],
+  start: number,
+): { codeblock: CodeBlockNode; endIndex: number } {
+  const startInfo = parseFencedCodeBlockStart(lines[start]);
+  const content: string[] = [];
+  let i = start + 1;
+
+  while (i < lines.length && lines[i].trim() !== "```") {
+    content.push(lines[i]);
+    i++;
+  }
+
+  if (i < lines.length && lines[i].trim() === "```") {
+    i++;
+  }
+
+  const codeblock: CodeBlockNode = {
+    kind: "CodeBlock",
+    content,
+    ...startInfo,
+  };
+
+  return { codeblock, endIndex: i };
+}
+
 function getBulletBlock(
   lines: string[],
   start: number,
@@ -182,9 +230,20 @@ function parseInlineSpans(text: string): Line {
   while (index < text.length) {
     const wikiStart = text.indexOf("![[", index);
     const markdownStart = text.indexOf("![", index);
+    const strongStart = text.indexOf("**", index);
+    const emphasisStart = text.indexOf("*", index);
+    const codeStart = text.indexOf("`", index);
+    const linkStart = text.indexOf("[", index);
 
     let start = -1;
-    let syntax: "wiki" | "markdown" | null = null;
+    let syntax:
+      | "wiki"
+      | "markdown"
+      | "strong"
+      | "emphasis"
+      | "code"
+      | "link"
+      | null = null;
 
     if (wikiStart !== -1 && (markdownStart === -1 || wikiStart <= markdownStart)) {
       start = wikiStart;
@@ -192,6 +251,26 @@ function parseInlineSpans(text: string): Line {
     } else if (markdownStart !== -1) {
       start = markdownStart;
       syntax = "markdown";
+    }
+
+    if (strongStart !== -1 && (start === -1 || strongStart < start)) {
+      start = strongStart;
+      syntax = "strong";
+    }
+
+    if (emphasisStart !== -1 && (start === -1 || emphasisStart < start)) {
+      start = emphasisStart;
+      syntax = "emphasis";
+    }
+
+    if (codeStart !== -1 && (start === -1 || codeStart < start)) {
+      start = codeStart;
+      syntax = "code";
+    }
+
+    if (linkStart !== -1 && (start === -1 || linkStart < start)) {
+      start = linkStart;
+      syntax = "link";
     }
 
     if (start === -1) {
@@ -214,6 +293,72 @@ function parseInlineSpans(text: string): Line {
       const [href, alt] = raw.split("|", 2);
       spans.push(buildImageSpan(href, alt));
       index = end + 2;
+      continue;
+    }
+
+    if (syntax === "strong") {
+      const end = text.indexOf("**", start + 2);
+      if (end === -1) {
+        spans.push(text.slice(start, start + 2));
+        index = start + 2;
+        continue;
+      }
+
+      spans.push({
+        kind: "Strong",
+        content: parseInlineSpans(text.slice(start + 2, end)),
+      });
+      index = end + 2;
+      continue;
+    }
+
+    if (syntax === "emphasis") {
+      const end = text.indexOf("*", start + 1);
+      if (end === -1) {
+        spans.push(text.slice(start, start + 1));
+        index = start + 1;
+        continue;
+      }
+
+      spans.push({
+        kind: "Emphasis",
+        content: parseInlineSpans(text.slice(start + 1, end)),
+      });
+      index = end + 1;
+      continue;
+    }
+
+    if (syntax === "code") {
+      const end = text.indexOf("`", start + 1);
+      if (end === -1) {
+        spans.push(text.slice(start, start + 1));
+        index = start + 1;
+        continue;
+      }
+
+      spans.push({
+        kind: "Code",
+        code: text.slice(start + 1, end),
+      });
+      index = end + 1;
+      continue;
+    }
+
+    if (syntax === "link") {
+      const altEnd = text.indexOf("](", start + 1);
+      const hrefEnd = altEnd === -1 ? -1 : text.indexOf(")", altEnd + 2);
+      if (altEnd === -1 || hrefEnd === -1) {
+        spans.push(text.slice(start, start + 1));
+        index = start + 1;
+        continue;
+      }
+
+      spans.push({
+        kind: "Link",
+        href: text.slice(altEnd + 2, hrefEnd),
+        content: parseInlineSpans(text.slice(start + 1, altEnd)),
+      });
+      index = hrefEnd + 1;
       continue;
     }
 

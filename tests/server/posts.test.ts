@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { setupTestServer } from "./helpers.ts";
 
-const { get, post, patch, del } = setupTestServer();
+const { get, post, patch, del, cookieFrom } = setupTestServer();
 
 // ---------------------------------------------------------------------------
 // Users
@@ -50,24 +50,27 @@ describe("DELETE /api/users/:id", () => {
 // Posts — requires a user in the DB first
 // ---------------------------------------------------------------------------
 
-let userId: string;
 let postId: string;
+let authCookie: string;
 
 beforeAll(async () => {
-  const res = await post("/api/users", {
-    hanko_user_id: "hanko-posts",
+  const res = await post("/api/auth/signup", {
     email: "posts@example.com",
+    password: "password",
   });
-  ({ id: userId } = (await res.json()) as { id: string });
+  authCookie = cookieFrom(res);
 });
 
 describe("POST /api/posts", () => {
   it("creates a post and returns its id", async () => {
-    const res = await post("/api/posts", {
-      slug: "first-post",
-      title: "First Post",
-      created_by: userId,
-    });
+    const res = await post(
+      "/api/posts",
+      {
+        slug: "first-post",
+        title: "First Post",
+      },
+      { headers: { "Content-Type": "application/json", Cookie: authCookie } },
+    );
     expect(res.status).toBe(201);
     const body = (await res.json()) as { id: string };
     postId = body.id;
@@ -76,7 +79,7 @@ describe("POST /api/posts", () => {
 
   it("returns 400 when required fields are missing", async () => {
     const res = await post("/api/posts", { title: "No slug or author" });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   });
 });
 
@@ -126,12 +129,15 @@ let revisionId: string;
 
 describe("POST /api/posts/:postId/revisions", () => {
   it("creates a revision and returns id + revision_number", async () => {
-    const res = await post(`/api/posts/${postId}/revisions`, {
-      created_by: userId,
-      ir_json: JSON.stringify([
-        { kind: "Header", level: 1, content: ["Hello"] },
-      ]),
-    });
+    const res = await post(
+      `/api/posts/${postId}/revisions`,
+      {
+        ir_json: JSON.stringify([
+          { kind: "Header", level: 1, content: ["Hello"] },
+        ]),
+      },
+      { headers: { "Content-Type": "application/json", Cookie: authCookie } },
+    );
     expect(res.status).toBe(201);
     const body = (await res.json()) as { id: string; revision_number: number };
     revisionId = body.id;
@@ -139,25 +145,27 @@ describe("POST /api/posts/:postId/revisions", () => {
   });
 
   it("auto-increments revision_number", async () => {
-    const res = await post(`/api/posts/${postId}/revisions`, {
-      created_by: userId,
-      ir_json: "{}",
-    });
+    const res = await post(
+      `/api/posts/${postId}/revisions`,
+      { ir_json: "{}" },
+      { headers: { "Content-Type": "application/json", Cookie: authCookie } },
+    );
     const body = (await res.json()) as { revision_number: number };
     expect(body.revision_number).toBe(2);
   });
 
   it("returns 404 when the post does not exist", async () => {
-    const res = await post("/api/posts/no-such-post/revisions", {
-      created_by: userId,
-      ir_json: "{}",
-    });
+    const res = await post(
+      "/api/posts/no-such-post/revisions",
+      { ir_json: "{}" },
+      { headers: { "Content-Type": "application/json", Cookie: authCookie } },
+    );
     expect(res.status).toBe(404);
   });
 
-  it("returns 400 when created_by is missing", async () => {
+  it("returns 401 when not logged in", async () => {
     const res = await post(`/api/posts/${postId}/revisions`, { ir_json: "{}" });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   });
 });
 

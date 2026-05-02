@@ -1,3 +1,44 @@
+import { markdownRenderer } from "../../src/ir/markdown_renderer"
+
+describe("End-to-end: save/load/resave cycle", () => {
+  it("should preserve mixed markers through a full save/load/resave cycle", () => {
+    const originalMarkdown = `# My List
+
+- First item
+* Second item
+- Third item`;
+
+    // Step 1: Parse original markdown
+    const parseResult = parseMarkdownToIR(originalMarkdown);
+    expect(parseResult.isOk()).toBe(true);
+    if (!parseResult.isOk()) return;
+
+    const ir = parseResult.value;
+
+    // Step 2: Simulate saving to DB (JSON stringify)
+    const jsonStr = JSON.stringify(ir);
+    const irFromJson = JSON.parse(jsonStr);
+
+    // Step 3: Reconstruct markdown from IR
+    const reconstructed = markdownRenderer.renderDocument({ kind: 'Document', nodes: irFromJson });
+
+    // Step 4: Parse the reconstructed markdown again
+    const reparsedResult = parseMarkdownToIR(reconstructed);
+    expect(reparsedResult.isOk()).toBe(true);
+    if (!reparsedResult.isOk()) return;
+
+    const reparsedIr = reparsedResult.value;
+
+    // Step 5: Verify markers are preserved through the cycle
+    const bulletBlock = reparsedIr[1] as any; // Index 1 should be the bullet list (after header)
+    expect(bulletBlock.kind).toBe("BulletedList");
+    expect(bulletBlock.content).toHaveLength(3);
+
+    expect(bulletBlock.content[0].markerByLanguage).toEqual({ markdown: "-" });
+    expect(bulletBlock.content[1].markerByLanguage).toEqual({ markdown: "*" });
+    expect(bulletBlock.content[2].markerByLanguage).toEqual({ markdown: "-" });
+  });
+});
 import { describe, it, expect } from "vitest";
 import { parseMarkdownToIR } from "../../src/ir/markdown_parser";
 import type {
@@ -5,6 +46,7 @@ import type {
   ParagraphNode,
   BulletBlock,
   NumberedBlock,
+  CodeBlockNode,
 } from "../../src/ir/types";
 
 describe("parseMarkdownToIR", () => {
@@ -122,6 +164,34 @@ This is line three.`;
       }
     });
 
+    it("should parse bold, italic, code, and links inside a paragraph", () => {
+      const markdown = "This is **bold**, *italic*, `code`, and [a link](https://example.com).";
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        const paragraph = result.value[0] as ParagraphNode;
+        expect(paragraph.kind).toBe("Paragraph");
+        expect(paragraph.content).toEqual([
+          [
+            "This is ",
+            { kind: "Strong", content: ["bold"] },
+            ", ",
+            { kind: "Emphasis", content: ["italic"] },
+            ", ",
+            { kind: "Code", code: "code" },
+            ", and ",
+            {
+              kind: "Link",
+              href: "https://example.com",
+              content: ["a link"],
+            },
+            ".",
+          ],
+        ]);
+      }
+    });
+
     it("should separate paragraphs by blank lines", () => {
       const markdown = `First paragraph.
 
@@ -189,6 +259,40 @@ Second paragraph.`;
         if (item2.kind === "BulletItem") {
           expect(item2.content).toEqual([["Second item"]]);
           expect(item2.markerByLanguage).toEqual({ markdown: "*" });
+        }
+      }
+    });
+
+    it("should parse a bulleted list with mixed markers (* and -)", () => {
+      const markdown = `- First item
+* Second item
+- Third item`;
+
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const bulletBlock = result.value[0] as BulletBlock;
+        expect(bulletBlock.kind).toBe("BulletedList");
+        expect(bulletBlock.content).toHaveLength(3);
+
+        const item1 = bulletBlock.content[0];
+        if (item1.kind === "BulletItem") {
+          expect(item1.content).toEqual([["First item"]]);
+          expect(item1.markerByLanguage).toEqual({ markdown: "-" });
+        }
+
+        const item2 = bulletBlock.content[1];
+        if (item2.kind === "BulletItem") {
+          expect(item2.content).toEqual([["Second item"]]);
+          expect(item2.markerByLanguage).toEqual({ markdown: "*" });
+        }
+
+        const item3 = bulletBlock.content[2];
+        if (item3.kind === "BulletItem") {
+          expect(item3.content).toEqual([["Third item"]]);
+          expect(item3.markerByLanguage).toEqual({ markdown: "-" });
         }
       }
     });
@@ -293,6 +397,47 @@ Second paragraph.`;
     });
   });
 
+  describe("Code Blocks", () => {
+    it("should parse a fenced code block without a language", () => {
+      const markdown = [
+        "```",
+        "const value = 1;",
+        "console.log(value);",
+        "```",
+      ].join("\n");
+
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const codeBlock = result.value[0] as CodeBlockNode;
+        expect(codeBlock.kind).toBe("CodeBlock");
+        expect(codeBlock.language).toBeUndefined();
+        expect(codeBlock.content).toEqual(["const value = 1;", "console.log(value);"]);
+      }
+    });
+
+    it("should parse a fenced code block with a language", () => {
+      const markdown = [
+        "```ts",
+        "const value: number = 1;",
+        "```",
+      ].join("\n");
+
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(1);
+        const codeBlock = result.value[0] as CodeBlockNode;
+        expect(codeBlock.kind).toBe("CodeBlock");
+        expect(codeBlock.language).toBe("ts");
+        expect(codeBlock.content).toEqual(["const value: number = 1;"]);
+      }
+    });
+  });
+
   describe("Mixed Content", () => {
     it("should parse a document with headers and paragraphs", () => {
       const markdown = `# Title
@@ -348,6 +493,39 @@ Final paragraph.`;
         expect(kinds).toContain("Paragraph");
         expect(kinds).toContain("BulletedList");
         expect(kinds).toContain("NumberedList");
+      }
+    });
+
+    it("should parse a document with a fenced code block", () => {
+      const markdown = [
+        "# Title",
+        "",
+        "Intro paragraph.",
+        "",
+        "```js",
+        "const answer = 42;",
+        "console.log(answer);",
+        "```",
+        "",
+        "Final paragraph.",
+      ].join("\n");
+
+      const result = parseMarkdownToIR(markdown);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(4);
+        expect(result.value[0].kind).toBe("Header");
+        expect(result.value[1].kind).toBe("Paragraph");
+        expect(result.value[2].kind).toBe("CodeBlock");
+        expect(result.value[3].kind).toBe("Paragraph");
+
+        const codeBlock = result.value[2] as CodeBlockNode;
+        expect(codeBlock.language).toBe("js");
+        expect(codeBlock.content).toEqual([
+          "const answer = 42;",
+          "console.log(answer);",
+        ]);
       }
     });
 
