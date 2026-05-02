@@ -90,10 +90,10 @@ Paula was doing issue and project management via Github. And I was generating an
 -Tim
 
 Week 5:
-Last week we started on writing the copde for the IR schema, HTML to IR renderer and the SQL schema. Progress has been good but as we don't currently have an Editor we aren't able to test yet.
+Last week we started on writing the code for the IR schema, HTML to IR renderer and the SQL schema. Progress has been good but as we don't currently have an Editor we aren't able to test yet.
 GitHub seems to be working well for us to work together, although we did feel the discussion function isn't so good for quick questions, as we are a small team though we thought it best to stick with it for now.
-At this week's meeting we reviewed the tasks for the coming week and realised that we had put creating the Editor before we had the code to convert Markdown to the IR (originally a week 6 task), so we decided to swap the tasks around and begin work on the editor next week as that makes more sense.
-Priorities for the week were: Getting the database set up: Markdown to IR schema and setting up the Hanko security module. Mei our technical lead was ill, but we felt that these tasks could continue satifactorily without their technical input.
+At this week's meeting, we reviewed the tasks for the coming week and realised that we had put creating the Editor before we had the code to convert Markdown to the IR (originally a week 6 task), so we decided to swap the tasks around and begin work on the editor next week as that makes more sense.
+Priorities for the week were: Getting the database set up: Markdown to IR schema, and setting up the Hanko security module. Mei our technical lead was ill, but we felt that these tasks could continue satifactorily without their technical input.
 
 Reflections on week 5:
 - Paula
@@ -111,7 +111,11 @@ Fortunately we already had a fairly clear plan so we were confident to carry on 
 My work on the SQL side of things and the general project management were also continuing smoothly. I provided a SQL schema on the Monday before the meeting and suggested that we use SQLite to keep things simple and to not get bogged down in server/database setup/configuration. 
 Mei reviewed the schema, approved it and agreed to SQLite. 
 
--Tim
+-Tim: 
+
+This week was a really interesting test for me, as Mei had been absent due to illness. I opted to attempt what Mei had in mind with IR to HTML representation. I had managed to get the work done, but no tests were in place currently, so I had my doubts
+about whether I had achieved what Mei had in mind. This scenario has been good for the team as it reflects a real world situation where a key player is absent, but deadlines
+still need to be met. I feel myself, Max and Paula made the right call.
 
 Week 6:
 The meeting as always worked well as a way to refocus us for the week ahead. We hadn't made as much progress as we'd hoped last week, but Tim had completed the Markdown to IR schema and Max had begun planning the SQL database.
@@ -136,10 +140,13 @@ This week I added the approved SQL schema to the project and set up some project
 While looking at integrating the database with the backend I realised there was a question of who and when to do the database integration. I split the Github issue for initial db setup and integration into two tickets: 1. initial setup 2. integration. 
 Will discuss with the team how to proceed but have already discussed with Mei that we'll need to divide this work between us. 
 
--Tim
+-Tim: 
+
+This week's meeting was a great success. Mei was happy with what had been achieved while she was away. The team managed to pull together and get project 1 step closer to the agreed goals.
+I was relieved to hear that what I had developed was what Mei had intended. I think the team was happy with the overall progress.
 
 Week 7:
-The team had made good progress during the week and were keen to crack on and get a minimal viable product ready for some uder testing in the next two weeks before the Easter break.
+The team had made good progress during the week and were keen to crack on and get a minimal viable product ready for some user testing in the next two weeks before the Easter break.
 The first lot of code was tested by Mei last week and it only required small changes. There was a problem with setting up Hanko for secure sign in, as it can only be implemented on a live site, so in the interim Mei has coded a simple sign in form.
 The meeting went well, we assigned tasks for the next few weeks and agreed that the tasks now require a bit more working together as we integrate the backend with the front end and database.
 The aim of the team was to meet next week and then hopefully be in a position to have at lleast two weeks break over easter (dependent on our progress). The weekly meetings are working really well and we agreed that having a clear Specification to work from has really helped focus us all, the weekly meetings don't last more that 45 minutes and are a great way to keep us all moving forward.
@@ -151,6 +158,9 @@ I'll start thinking about user testing as this will be something we need to do e
 Mei:
 
 Tim:
+During the break, I spent quite a bit of time redoing one of the codes, which I completely misunderstood. It was still a great learning experience for me and learned alot. 
+Before the break finished, I had managed to complete the backend. I discussed with Mei during the break that there may be a possible of adding more but for now I need to focus on 
+other assignments. Mei was happy with that because we were on route to completing the initial target.
 
 Max:
 More steady progress. The team is working well in an asynchronous manner. We discussed plans for the spring break and hopes of pushing towards an MVP that can be tested. The idea being to ensure we have time to test and iterate on the project before the end of term deadline looms.  
@@ -169,22 +179,26 @@ I wrote the user tests this week and am keen to start looking at what we've deve
 
 Mei
 
-Tim
+Tim - Nothing to report this week, as there is not much for me to implement until the possible discussion of adding another language format. 
 
 Max
 
 Reflections on week 9-10:
-Back to uni after the break and the main progress is that Max has created the basic editor, but it still looks like it is waiting to be pulled.
-Once this is done it was agreed:
-1. Mei can do initial check of integration front end/backend
+Back to uni after the break, and the main progress is that Max has created the basic editor, but it still looks like it is waiting to be pulled.
+Once this is done, it was agreed:
+1. Mei can do an initial check of the integration front-end/backend
 2. Paula can run User testing
-3. We can all suggest Editor/front end enhancements to Max (By raising issues in Github)
+3. We can all suggest Editor/front-end enhancements to Max (By raising issues in GitHub)
 4. Mei and Tim to discuss adding another language format based on any issues that arise from user testing.
 
 Paula:
 The project has stalled a bit this week as Mei, the Technical Lead has been without internet and they are the only one who has permissions on GitHub to pull an update. 
 This is perhaps an oversight on the part of the team, and we should have had someone else as a backup to do this. The frontend of the blog has now been written by Max, so we are ready for testing. Hopefully we can get underway next week.
+
 Tim:
+As mentioned by Paula, there seemed to be a few hiccups. I am still just an observer currently as not much to do on my end but maybe fiddle around with the editor. 
+There has been no discussion of adding another language format but happy with what the team has managed to produce so far, considering all of the team's
+other deadlines and commitments.
 
 Mei:
 
