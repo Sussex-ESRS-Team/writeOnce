@@ -209,7 +209,7 @@ A few issues have come up with front-end/back-end integration. I have not handle
 Max:
 Week 9 was quiet for me as I had completed the planned work in front of me. Paula and I had a short instance of the weekly meeting. Paula was waiting on the MVP editor being pulled and the backend bugfix for the created_by issue mentioned in the week 8/spring holiday entry. 
 
-Week 10 started with some back and forth about new features for the editor, primarily a toolbar for formatting options and adding images. I added the formatting toolbar and asked what Paula had in mind for image functionality. She confirmed she didn't mind how it was implemented. A duplicate ticket was raised by Paula for the created_by bug that was still blocking her from further user testing. I closed it as duplicate and bumped the original issue. I would have marked it as blocking the testing, but there was no issue for the testing. I did mean to raise that with Paula, but I didn't get to it. 
+Week 10 started with some back and forth about new features for the editor, primarily a toolbar for formatting options and adding images. I added the formatting toolbar and asked what Paula had in mind for image functionality. She confirmed she didn't mind how it was implemented. A duplicate ticket was raised by Paula for the created_by bug that was still blocking her from further user testing. I closed it as duplicate and bumped the original issue. 
 
 Week 11
 I went to add the image button to the editor toolbar and realised that the backend was missing any functionality for images. I raised this with Mei and she added the functionality. Mei's image work was committed to an already-merged branch, so I cherry-picked it across with attribution preserved. 
