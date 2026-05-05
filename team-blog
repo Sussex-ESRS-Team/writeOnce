@@ -156,6 +156,7 @@ Paula:
 It's been a quiet week for me as the rest of the team get on with the coding, but it's been satifying watching it slowly coming together. I look forward to seeing early iterations of the editor over the next week.
 I'll start thinking about user testing as this will be something we need to do early and often.
 Mei:
+I caught a few issues with the current implementation which required a somewhat substantial rewrite, but the backend work is nearing its end now.
 
 Tim:
 During the break, I spent quite a bit of time redoing one of the codes, which I completely misunderstood. It was still a great learning experience for me and learned alot. 
@@ -178,6 +179,7 @@ I wrote the user tests this week and am keen to start looking at what we've deve
 
 
 Mei
+Nothing to report this week, some personal issues have come up and I haven't had the time to focus on this project.
 
 Tim - Nothing to report this week, as there is not much for me to implement until the possible discussion of adding another language format. 
 
@@ -201,6 +203,7 @@ There has been no discussion of adding another language format but happy with wh
 other deadlines and commitments.
 
 Mei:
+A few issues have come up with front-end/back-end integration. I have not handled them in as timely a manner as I would have liked, but they are handled. There isn't really enough time to add another language format at this point, but what's there is now working well, as confirmed by my unit/integration testing and Paula's user testing.
 
 Max:
 
