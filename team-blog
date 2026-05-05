@@ -184,6 +184,7 @@ Nothing to report this week, some personal issues have come up and I haven't had
 Tim - Nothing to report this week, as there is not much for me to implement until the possible discussion of adding another language format. 
 
 Max
+Not a lot happened in week 8, but the spring break was more eventful. I went to do the database integrations in the first week of the holiday and found that they were basically already done. So I focused on a handful of bugfixes and raised a PR for them. Also raised that changes were made directly to the database schema instead of via migrations, which is better practice. In the second week of the break I built the MVP version of the editor. This delivered against the action agreed in our meeting the previous week. I hit an issue where the save handler was expecting to be passed a created_by value. I raised an issue to change this to get the value from the session information. Mei responded to the bug issue agreeing with the proposed approach. 
 
 Reflections on week 9-10:
 Back to uni after the break, and the main progress is that Max has created the basic editor, but it still looks like it is waiting to be pulled.
@@ -206,7 +207,12 @@ Mei:
 A few issues have come up with front-end/back-end integration. I have not handled them in as timely a manner as I would have liked, but they are handled. There isn't really enough time to add another language format at this point, but what's there is now working well, as confirmed by my unit/integration testing and Paula's user testing.
 
 Max:
+Week 9 was quiet for me as I had completed the planned work in front of me. Paula and I had a short instance of the weekly meeting. Paula was waiting on the MVP editor being pulled and the backend bugfix for the created_by issue mentioned in the week 8/spring holiday entry. 
 
+Week 10 started with some back and forth about new features for the editor, primarily a toolbar for formatting options and adding images. I added the formatting toolbar and asked what Paula had in mind for image functionality. She confirmed she didn't mind how it was implemented. A duplicate ticket was raised by Paula for the created_by bug that was still blocking her from further user testing. I closed it as duplicate and bumped the original issue. I would have marked it as blocking the testing, but there was no issue for the testing. I did mean to raise that with Paula, but I didn't get to it. 
+
+Week 11
+I went to add the image button to the editor toolbar and realised that the backend was missing any functionality for images. I raised this with Mei and she added the functionality. Mei's image work was committed to an already-merged branch, so I cherry-picked it across with attribution preserved. 
 
 End of project reflections:
 
