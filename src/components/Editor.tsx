@@ -14,17 +14,8 @@ import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
 import { markdownRenderer } from '../ir/markdown_renderer'
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    || `post-${Date.now()}`
-}
+import type { IRNode } from '../ir/types'
+import { downloadMarkdown, slugify } from '../utils/export'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,6 +44,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
   const [postList, setPostList]   = useState<Post[]>([])
   const [loadingPosts, setLoadingPosts] = useState(false)
   const [activePost, setActivePost]   = useState<Post | null>(null)
+  const [irNodes, setIrNodes]     = useState<IRNode[] | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // ── Toolbar format helper ─────────────────────────────────────────────────
@@ -157,6 +149,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     try {
       // 1. Parse markdown to IR
       const { nodes } = await parse(markdown)
+      setIrNodes(nodes as IRNode[])
 
       // 2. Create post (or reuse activePost)
       let post = activePost
@@ -217,7 +210,8 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
       }
       // Most recent revision first (API returns newest first)
       const latest: Revision = revList[0]
-      const ir = JSON.parse(latest.ir_json)
+      const ir = JSON.parse(latest.ir_json) as IRNode[]
+      setIrNodes(ir)
 
       // Render IR → HTML
       const { html } = await renderIR(ir)
@@ -244,9 +238,17 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     setTitle('')
     setMarkdown(DEFAULT_CONTENT)
     setPreviewHtml(null)
+    setIrNodes(null)
     setStatus({ kind: 'idle' })
     setView('editor')
   }
+
+  // ── Export ───────────────────────────────────────────────────────────────
+
+  const handleExport = useCallback(() => {
+    if (!irNodes) return
+    downloadMarkdown(title.trim() || undefined, irNodes)
+  }, [irNodes, title])
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -331,6 +333,15 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('line-prefix', '1. ') }}>1. List</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); applyFormat('wrap', '`', '`') }}>&lt;/&gt;</button>
               <button className="btn-ghost" style={styles.toolbarBtn} onMouseDown={e => { e.preventDefault(); insertImage() }} title="Insert image">&#128247;</button>
+              <button
+                className="btn-ghost"
+                style={{ ...styles.toolbarBtn, opacity: irNodes ? 1 : 0.4 }}
+                onClick={handleExport}
+                disabled={!irNodes}
+                title={irNodes ? 'Export as Markdown' : 'Save a post first to export'}
+              >
+                ↓ .md
+              </button>
             </div>
 
             <textarea
