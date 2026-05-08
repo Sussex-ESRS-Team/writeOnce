@@ -231,6 +231,25 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     }
   }, [])
 
+  // ── Export post from list ─────────────────────────────────────────────────
+
+  const handleExportPost = useCallback(async (post: Post) => {
+    try {
+      const revList = await revisions.list(post.id)
+      if (revList.length === 0) {
+        setStatus({ kind: 'err', message: `No revisions found for "${post.title}".` })
+        return
+      }
+      const ir = JSON.parse(revList[0].ir_json) as IRNode[]
+      downloadMarkdown(post.title || undefined, ir)
+    } catch (err: unknown) {
+      setStatus({
+        kind: 'err',
+        message: err instanceof Error ? err.message : 'Export failed',
+      })
+    }
+  }, [])
+
   // ── New post ──────────────────────────────────────────────────────────────
 
   const handleNew = () => {
@@ -423,6 +442,14 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
                           onClick={() => handleLoadPost(post)}
                         >
                           Load
+                        </button>
+                        <button
+                          className="btn-ghost"
+                          style={{ fontSize: '0.68rem', padding: '0.3rem 0.6rem' }}
+                          onClick={() => handleExportPost(post)}
+                          title="Export as Markdown"
+                        >
+                          ↓ .md
                         </button>
                         <button
                           className="btn-danger"
