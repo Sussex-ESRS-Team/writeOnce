@@ -34,7 +34,7 @@ describe("smoke: user login and create post", () => {
 
     // --- Simulate saving: parse some markdown and create a revision ---
     const parseRes = await post(
-      "/api/parse",
+      "/api/parse/markdown",
       { markdown: "# Smoke Save\n\nHello world" },
       { headers: { "Content-Type": "application/json", Cookie: authCookie } },
     );
