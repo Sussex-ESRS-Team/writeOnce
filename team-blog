@@ -222,7 +222,9 @@ The team worked really well in the way we divided the roles between us, but I th
 As we moved our meetings online after the first week I think this maybe meant we skill shared a bit less. I think we all would have liked to work on the project a bit more, and create a more developed final product,
 but I think time commitments from other modules got in the way at the end. Overall it has been a nice group to work with, they have all been very positive and supportive.
 
-Mei:
+Mei: Overall the project went well. The specification document I drafted early on ended up being more useful than I expected, it gave us a clear structure to work from throughout. The weekly meetings were consistently short and focused, which I think speaks to how well the team communicated.
+My absences were disruptive, particularly to testing, and the merge permissions situation in week 9 was an oversight I should have caught earlier. The team handled both well though, and Tim's work on the IR schema during my illness barely needed touching.
+The architecture held up. The IR design, SQLite, and testing approach were all solid calls. There wasn't time to add another language format, but what's there is working and well-tested. Overall, good work from everyone involved, it's just a shame that I couldn't put the time I wanted to into it.
 
 Max:
 
