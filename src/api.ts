@@ -84,6 +84,20 @@ export const revisions = {
 export const parseMarkdown = (markdown: string) =>
   req<{ nodes: unknown[] }>('POST', '/parse/markdown', { markdown })
 
+export async function parseHtml(html: string): Promise<{ nodes: unknown[] }> {
+  const res = await fetch(`${BASE}/parse/html`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null) as { error?: string } | null
+    throw new Error(body?.error ?? `HTTP ${res.status}`)
+  }
+  return res.json() as Promise<{ nodes: unknown[] }>
+}
+
 export const renderIR = (irJson: unknown) =>
   req<{ html: string }>('POST', '/render/ir', { nodes: irJson })
 
