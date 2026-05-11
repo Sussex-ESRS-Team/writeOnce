@@ -81,8 +81,8 @@ export const revisions = {
 
 // ── Parse / Render ────────────────────────────────────────────────────────────
 
-export const parse = (markdown: string) =>
-  req<{ nodes: unknown[] }>('POST', '/parse', { markdown })
+export const parseMarkdown = (markdown: string) =>
+  req<{ nodes: unknown[] }>('POST', '/parse/markdown', { markdown })
 
 export const renderIR = (irJson: unknown) =>
   req<{ html: string }>('POST', '/render/ir', { nodes: irJson })
