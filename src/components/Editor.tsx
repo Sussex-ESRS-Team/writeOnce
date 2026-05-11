@@ -12,7 +12,7 @@
 
 import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import { parseMarkdown, renderIR, posts, revisions, Post, Revision } from '../api'
+import { parseMarkdown, parseHtml, renderIR, posts, revisions, Post, Revision } from '../api'
 import { markdownRenderer } from '../ir/markdown_renderer'
 import type { IRNode } from '../ir/types'
 import { downloadMarkdown, slugify } from '../utils/export'
@@ -46,6 +46,10 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
   const [activePost, setActivePost]   = useState<Post | null>(null)
   const [irNodes, setIrNodes]     = useState<IRNode[] | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [htmlModalOpen, setHtmlModalOpen] = useState(false)
+  const [htmlInput, setHtmlInput]         = useState('')
+  const [htmlError, setHtmlError]         = useState<string | null>(null)
+  const [htmlImporting, setHtmlImporting] = useState(false)
 
   // ── Toolbar format helper ─────────────────────────────────────────────────
 
@@ -269,6 +273,28 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     downloadMarkdown(title.trim() || undefined, irNodes)
   }, [irNodes, title])
 
+  // ── HTML import ───────────────────────────────────────────────────────────
+
+  const handleImportHtml = useCallback(async () => {
+    setHtmlImporting(true)
+    setHtmlError(null)
+    try {
+      const { nodes } = await parseHtml(htmlInput)
+      setIrNodes(nodes as IRNode[])
+      const reconstructed = markdownRenderer.renderDocument({ kind: 'Document', nodes: nodes as IRNode[] })
+      setMarkdown(reconstructed)
+      const { html } = await renderIR(nodes)
+      setPreviewHtml(html)
+      setActivePost(null)
+      setHtmlModalOpen(false)
+      setHtmlInput('')
+    } catch (err: unknown) {
+      setHtmlError(err instanceof Error ? err.message : 'Import failed')
+    } finally {
+      setHtmlImporting(false)
+    }
+  }, [htmlInput])
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -361,6 +387,14 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
               >
                 ↓ .md
               </button>
+              <button
+                className="btn-ghost"
+                style={styles.toolbarBtn}
+                onClick={() => { setHtmlModalOpen(true); setHtmlError(null); setHtmlInput('') }}
+                title="Import HTML"
+              >
+                ← HTML
+              </button>
             </div>
 
             <textarea
@@ -402,6 +436,43 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
                   <p>Save a post to see the IR → HTML render here.</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HTML import modal ── */}
+      {htmlModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <div style={styles.modalHeader}>
+              <span style={styles.paneLabel}>Import HTML</span>
+            </div>
+            <textarea
+              style={styles.modalTextarea}
+              rows={15}
+              value={htmlInput}
+              onChange={e => setHtmlInput(e.target.value)}
+              placeholder="Paste HTML here…"
+              spellCheck={false}
+            />
+            {htmlError && (
+              <div style={styles.modalError}>{htmlError}</div>
+            )}
+            <div style={styles.modalFooter}>
+              <button
+                className="btn-ghost"
+                onClick={() => { setHtmlModalOpen(false); setHtmlInput(''); setHtmlError(null) }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleImportHtml}
+                disabled={htmlImporting || !htmlInput.trim()}
+              >
+                {htmlImporting ? 'Importing…' : 'Import'}
+              </button>
             </div>
           </div>
         </div>
@@ -709,5 +780,58 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'var(--mono)',
     fontSize: '0.78rem',
     color: 'var(--ink-light)',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+  },
+  modal: {
+    background: '#fff',
+    borderRadius: '4px',
+    width: '560px',
+    maxWidth: '90vw',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+  },
+  modalHeader: {
+    padding: '0.8rem 1rem',
+    borderBottom: '1px solid var(--paper-mid)',
+    background: 'var(--paper-mid)',
+    borderRadius: '4px 4px 0 0',
+  },
+  modalTextarea: {
+    fontFamily: 'var(--mono)',
+    fontSize: '0.78rem',
+    lineHeight: '1.55',
+    padding: '0.8rem 1rem',
+    border: 'none',
+    borderBottom: '1px solid var(--paper-mid)',
+    outline: 'none',
+    resize: 'vertical',
+    background: '#fff',
+    color: 'var(--ink)',
+  },
+  modalError: {
+    fontFamily: 'var(--mono)',
+    fontSize: '0.75rem',
+    color: '#c00',
+    padding: '0.5rem 1rem',
+    borderBottom: '1px solid var(--paper-mid)',
+    background: '#fff8f8',
+  },
+  modalFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: '0.5rem',
+    padding: '0.6rem 1rem',
+    background: 'var(--paper-mid)',
+    borderRadius: '0 0 4px 4px',
   },
 }
