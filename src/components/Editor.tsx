@@ -12,7 +12,7 @@
 
 import React, { useState, useCallback, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import { parse, renderIR, posts, revisions, Post, Revision } from '../api'
+import { parseMarkdown, renderIR, posts, revisions, Post, Revision } from '../api'
 import { markdownRenderer } from '../ir/markdown_renderer'
 import type { IRNode } from '../ir/types'
 import { downloadMarkdown, slugify } from '../utils/export'
@@ -148,7 +148,7 @@ export default function Editor({ userId, userEmail, onLogout }: Props) {
     setStatus({ kind: 'working', message: 'Parsing Markdown → IR…' })
     try {
       // 1. Parse markdown to IR
-      const { nodes } = await parse(markdown)
+      const { nodes } = await parseMarkdown(markdown)
       setIrNodes(nodes as IRNode[])
 
       // 2. Create post (or reuse activePost)
